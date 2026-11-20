@@ -1,0 +1,10 @@
+{
+  "name": "Git Jet",
+  "publisher": "santiagobarcenas",
+  "version": "0.27.4",
+  "sha256": "48208d8b1f80d4555683f7e412e39d01f17b2d6cb14015f5001023e00abc56e9",
+  "marketplace": "https://marketplace.visualstudio.com/items?itemName=santiagobarcenas.git-jet",
+  "repository": "https://github.com/Jsbarcenas/git-jet",
+  "retrieved": "2026-11-21",
+  "license": "Apache-2.0"
+}

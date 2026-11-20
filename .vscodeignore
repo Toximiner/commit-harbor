@@ -1,0 +1,13 @@
+vendor/**
+patches/**
+scripts/**
+tests/**
+.github/**
+.git/**
+.gitignore
+.vscodeignore
+package-lock.json
+node_modules/**
+*.vsix
+SHA256SUMS
+**/__pycache__/**

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+media/
+*.vsix
+!vendor/*.vsix
+SHA256SUMS
+.test/
+__pycache__/

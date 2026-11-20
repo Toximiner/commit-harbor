@@ -1,0 +1,3278 @@
+{
+  "name": "commit-harbor",
+  "displayName": "Commit Harbor",
+  "description": "A Git workbench derived from Git Jet, with persistent commit message pane height.",
+  "version": "0.1.0",
+  "publisher": "Toximiner",
+  "license": "Apache-2.0",
+  "icon": "assets/icon.png",
+  "preview": true,
+  "galleryBanner": {
+    "color": "#2B2D30",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Toximiner/commit-harbor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Toximiner/commit-harbor/issues"
+  },
+  "homepage": "https://github.com/Toximiner/commit-harbor#readme",
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "SCM Providers",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "git",
+    "jetbrains",
+    "webstorm",
+    "intellij",
+    "commit",
+    "log",
+    "graph",
+    "git graph",
+    "history",
+    "branches",
+    "rebase",
+    "interactive rebase",
+    "cherry-pick",
+    "merge conflicts",
+    "shelve",
+    "stash",
+    "changelists",
+    "blame",
+    "annotate",
+    "diff",
+    "worktree",
+    "multi-repo",
+    "pull requests",
+    "mcp",
+    "ai",
+    "scm"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "extensionDependencies": [
+    "vscode.git"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Commit Harbor does not run Git in Restricted Mode: a repository can make Git execute programs (hooks, fsmonitor, sshCommand, credential helpers). Trust the workspace to enable it.",
+      "restrictedConfigurations": [
+        "commitharbor.git.path",
+        "commitharbor.commit.checks.runTask",
+        "commitharbor.shelf.location",
+        "commitharbor.github.enterpriseServer",
+        "commitharbor.hosting.servers",
+        "commitharbor.ai.cli.claudePath",
+        "commitharbor.ai.cli.codexPath",
+        "commitharbor.ai.cli.geminiPath"
+      ]
+    }
+  },
+  "activationEvents": [
+    "workspaceContains:.git",
+    "onView:commitharbor.commit",
+    "onView:commitharbor.log",
+    "onView:commitharbor.pullRequests",
+    "onFileSystem:commitharbor-rev",
+    "onFileSystem:commitharbor-shelf",
+    "onFileSystem:commitharbor-clipboard",
+    "onMcpServerDefinitionProvider:commitharbor"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "commitharbor",
+          "title": "Commit Harbor",
+          "icon": "media/icons/commitharbor.svg"
+        }
+      ],
+      "panel": [
+        {
+          "id": "commitharbor-panel",
+          "title": "Commit Harbor",
+          "icon": "media/icons/commitharbor.svg"
+        }
+      ]
+    },
+    "views": {
+      "commitharbor-panel": [
+        {
+          "type": "webview",
+          "id": "commitharbor.log",
+          "name": "Git",
+          "contextualTitle": "Commit Harbor: Git",
+          "icon": "$(git-commit)",
+          "when": "isWorkspaceTrusted"
+        }
+      ],
+      "commitharbor": [
+        {
+          "type": "webview",
+          "id": "commitharbor.commit",
+          "name": "Commit",
+          "contextualTitle": "Commit Harbor: Commit",
+          "icon": "media/icons/commitharbor.svg",
+          "initialSize": 3,
+          "when": "isWorkspaceTrusted"
+        },
+        {
+          "type": "webview",
+          "id": "commitharbor.pullRequests",
+          "name": "Pull Requests",
+          "contextualTitle": "Commit Harbor: Pull Requests",
+          "icon": "$(git-pull-request)",
+          "initialSize": 2,
+          "visibility": "collapsed",
+          "when": "isWorkspaceTrusted && commitharbor.githubRepository"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "commitharbor.refresh",
+        "title": "Refresh",
+        "category": "Commit Harbor",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "commitharbor.backgroundTasks.show",
+        "title": "Show Background Tasks",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.backgroundTasks.cancel",
+        "title": "Cancel Background Task",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.showCommit",
+        "title": "Show Commit Tool Window",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.showConsole",
+        "title": "Show Git Console",
+        "category": "Commit Harbor",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "commitharbor.commit.showMessageHistory",
+        "title": "Commit Message History",
+        "category": "Commit Harbor",
+        "icon": "$(history)"
+      },
+      {
+        "command": "commitharbor.commit.clearMessageHistory",
+        "title": "Clear Commit Message History",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hunk.toggle",
+        "title": "Toggle Hunk in Commit",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hunk.include",
+        "title": "Include Changed Lines into Commit",
+        "category": "Commit Harbor",
+        "icon": "$(check)"
+      },
+      {
+        "command": "commitharbor.hunk.exclude",
+        "title": "Exclude Changed Lines from Commit",
+        "category": "Commit Harbor",
+        "icon": "$(close)"
+      },
+      {
+        "command": "commitharbor.hunk.includeAll",
+        "title": "Include All Hunks of File into Commit",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hunk.excludeAll",
+        "title": "Exclude All Hunks of File from Commit",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.commit.toggleControls",
+        "title": "Toggle Commit Controls",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.addToVcs",
+        "title": "Add",
+        "category": "Commit Harbor",
+        "icon": "$(add)"
+      },
+      {
+        "command": "commitharbor.ignore.add",
+        "title": "Add to .gitignore",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.rollback",
+        "title": "Rollback…",
+        "category": "Commit Harbor",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "commitharbor.gpg.configure",
+        "title": "Configure GPG Key…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.changelists.clearIgnoredConflicts",
+        "title": "Clear Ignored Changelist Conflicts",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.fetch",
+        "title": "Fetch",
+        "category": "Commit Harbor",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "commitharbor.fetchAll",
+        "title": "Fetch All Remotes",
+        "category": "Commit Harbor",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "commitharbor.updateProject",
+        "title": "Update Project",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "commitharbor.push",
+        "title": "Push",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "commitharbor.git.test",
+        "title": "Test Git Executable",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.collectDiagnostics",
+        "title": "Collect Git Diagnostics",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.popup",
+        "title": "Branches…",
+        "category": "Commit Harbor",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "commitharbor.vcsOperations",
+        "title": "VCS Operations",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.checkout",
+        "title": "Checkout",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.checkoutRevision",
+        "title": "Checkout Tag or Revision…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.new",
+        "title": "New Branch…",
+        "category": "Commit Harbor",
+        "icon": "$(add)"
+      },
+      {
+        "command": "commitharbor.branches.rename",
+        "title": "Rename Branch…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.delete",
+        "title": "Delete Branch",
+        "category": "Commit Harbor",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "commitharbor.branches.compareWithCurrent",
+        "title": "Compare with Current",
+        "category": "Commit Harbor",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "commitharbor.branches.showDiffWithWorkingTree",
+        "title": "Show Diff with Working Tree",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.mergeIntoCurrent",
+        "title": "Merge into Current",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.rebaseCurrentOnto",
+        "title": "Rebase Current onto Selected",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.checkoutAndRebase",
+        "title": "Checkout and Rebase onto Current",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.checkoutAndUpdate",
+        "title": "Checkout and Update",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.pullRebase",
+        "title": "Pull into Current Using Rebase",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.pullMerge",
+        "title": "Pull into Current Using Merge",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.update",
+        "title": "Update Selected",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "commitharbor.branches.push",
+        "title": "Push…",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "commitharbor.branches.setUpstream",
+        "title": "Track Remote Branch…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.unsetUpstream",
+        "title": "Unset Upstream Branch",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.toggleFavorite",
+        "title": "Mark/Unmark as Favorite",
+        "category": "Commit Harbor",
+        "icon": "$(star-empty)"
+      },
+      {
+        "command": "commitharbor.branches.copyName",
+        "title": "Copy Branch Name",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.showInLog",
+        "title": "Navigate Log to Selected Branch Head",
+        "category": "Commit Harbor",
+        "icon": "$(history)"
+      },
+      {
+        "command": "commitharbor.branches.cleanup",
+        "title": "Cleanup Branches…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.refresh",
+        "title": "Refresh Branches",
+        "category": "Commit Harbor",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "commitharbor.branches.toggleGroupByDirectory",
+        "title": "Group Branches by Directory",
+        "category": "Commit Harbor",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "commitharbor.branches.toggleShowRecent",
+        "title": "Show Recent Branches",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.toggleShowTags",
+        "title": "Show Tags",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.branches.toggleShowMy",
+        "title": "Show My Branches",
+        "category": "Commit Harbor",
+        "icon": "$(account)"
+      },
+      {
+        "command": "commitharbor.tags.new",
+        "title": "New Tag…",
+        "category": "Commit Harbor",
+        "icon": "$(tag)"
+      },
+      {
+        "command": "commitharbor.tags.delete",
+        "title": "Delete Tag",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.tags.push",
+        "title": "Push Tag…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.remotes.manage",
+        "title": "Manage Remotes…",
+        "category": "Commit Harbor",
+        "icon": "$(cloud)"
+      },
+      {
+        "command": "commitharbor.remotes.add",
+        "title": "Add Remote…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.remotes.edit",
+        "title": "Edit Remote…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.remotes.remove",
+        "title": "Remove Remote",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.operation.continue",
+        "title": "Continue Operation (Rebase / Merge / Cherry-Pick)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.operation.abort",
+        "title": "Abort Operation (Rebase / Merge / Cherry-Pick)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.rebase.continue",
+        "title": "Continue Rebase",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.rebase.skip",
+        "title": "Skip Commit (Rebase)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.rebase.abort",
+        "title": "Abort Rebase",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.merge.abort",
+        "title": "Abort Merge",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.merge.commit",
+        "title": "Merge Commit",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.cherryPick.continue",
+        "title": "Continue Cherry-Pick",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.cherryPick.abort",
+        "title": "Abort Cherry-Pick",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.revert.continue",
+        "title": "Continue Revert",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.revert.abort",
+        "title": "Abort Revert",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.worktrees.new",
+        "title": "New Worktree…",
+        "category": "Commit Harbor",
+        "icon": "$(add)"
+      },
+      {
+        "command": "commitharbor.worktrees.open",
+        "title": "Open Worktree in New Window",
+        "category": "Commit Harbor",
+        "icon": "$(link-external)"
+      },
+      {
+        "command": "commitharbor.worktrees.openHere",
+        "title": "Open Worktree in This Window",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.worktrees.delete",
+        "title": "Delete Worktree",
+        "category": "Commit Harbor",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "commitharbor.worktrees.prune",
+        "title": "Prune Worktrees",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.worktrees.toggleLock",
+        "title": "Lock / Unlock Worktree",
+        "category": "Commit Harbor",
+        "icon": "$(lock)"
+      },
+      {
+        "command": "commitharbor.worktrees.refresh",
+        "title": "Refresh Worktrees",
+        "category": "Commit Harbor",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "commitharbor.stash.create",
+        "title": "Stash Changes…",
+        "category": "Commit Harbor",
+        "icon": "$(add)"
+      },
+      {
+        "command": "commitharbor.stash.silently",
+        "title": "Stash Silently",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.files",
+        "title": "Stash Files",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.unstash",
+        "title": "Unstash Changes…",
+        "category": "Commit Harbor",
+        "enablement": "commitharbor.stashTabVisible"
+      },
+      {
+        "command": "commitharbor.stash.show",
+        "title": "Show Git Stash",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.showWithShelf",
+        "title": "Show Stashes and Shelves",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.unstashAs",
+        "title": "Unstash…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.pop",
+        "title": "Pop Stash",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "commitharbor.stash.apply",
+        "title": "Apply Stash",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.branch",
+        "title": "Unstash as New Branch…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.drop",
+        "title": "Drop Stash",
+        "category": "Commit Harbor",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "commitharbor.stash.clear",
+        "title": "Clear Stashes",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.showDiff",
+        "title": "Show Diff (Stash)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.stash.refresh",
+        "title": "Refresh Stashes",
+        "category": "Commit Harbor",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "commitharbor.shelf.shelve",
+        "title": "Shelve Changes…",
+        "category": "Commit Harbor",
+        "icon": "$(add)"
+      },
+      {
+        "command": "commitharbor.shelf.shelveSilently",
+        "title": "Shelve Silently",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.saveToShelf",
+        "title": "Save to Shelf",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.unshelve",
+        "title": "Unshelve Changes…",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "commitharbor.shelf.unshelveSilently",
+        "title": "Unshelve Silently",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.rename",
+        "title": "Rename Shelved Change…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.delete",
+        "title": "Delete Shelved Change",
+        "category": "Commit Harbor",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "commitharbor.shelf.restore",
+        "title": "Restore Shelved Change",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.importPatches",
+        "title": "Import Patches to Shelf…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.createPatch",
+        "title": "Create Patch from Shelved Change…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.showDiff",
+        "title": "Show Diff (Shelf)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.changeLocation",
+        "title": "Change Shelves Location…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.shelf.refresh",
+        "title": "Refresh Shelf",
+        "category": "Commit Harbor",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "commitharbor.patch.create",
+        "title": "Create Patch…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.patch.copy",
+        "title": "Copy as Patch to Clipboard",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.patch.save",
+        "title": "Save Patch…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.patch.apply",
+        "title": "Apply Patch…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.patch.applyFromClipboard",
+        "title": "Apply Patch from Clipboard",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.conflicts.show",
+        "title": "Resolve Conflicts…",
+        "category": "Commit Harbor",
+        "icon": "$(warning)"
+      },
+      {
+        "command": "commitharbor.conflicts.acceptYours",
+        "title": "Accept Yours",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-left)"
+      },
+      {
+        "command": "commitharbor.conflicts.acceptTheirs",
+        "title": "Accept Theirs",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-right)"
+      },
+      {
+        "command": "commitharbor.conflicts.merge",
+        "title": "Merge…",
+        "category": "Commit Harbor",
+        "icon": "$(git-merge)"
+      },
+      {
+        "command": "commitharbor.conflicts.markResolved",
+        "title": "Mark as Resolved",
+        "category": "Commit Harbor",
+        "icon": "$(check)"
+      },
+      {
+        "command": "commitharbor.conflicts.revertResolution",
+        "title": "Revert Resolved",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.conflicts.resolveSimple",
+        "title": "Resolve All Simple Conflicts",
+        "category": "Commit Harbor",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "commitharbor.conflicts.continue",
+        "title": "Continue",
+        "category": "Commit Harbor",
+        "icon": "$(debug-continue)"
+      },
+      {
+        "command": "commitharbor.conflicts.abort",
+        "title": "Abort",
+        "category": "Commit Harbor",
+        "icon": "$(close)"
+      },
+      {
+        "command": "commitharbor.pull.dialog",
+        "title": "Pull…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.update.dialog",
+        "title": "Update Project…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.merge.dialog",
+        "title": "Merge…",
+        "category": "Commit Harbor",
+        "icon": "$(git-merge)"
+      },
+      {
+        "command": "commitharbor.rebase.dialog",
+        "title": "Rebase…",
+        "category": "Commit Harbor",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "commitharbor.rebase.interactive",
+        "title": "Interactively Rebase from Here…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.clone",
+        "title": "Clone Repository…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.init",
+        "title": "Create Git Repository…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.unshallow",
+        "title": "Unshallow Repository",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.push.dialog",
+        "title": "Push…",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "commitharbor.log.show",
+        "title": "Show Git Log",
+        "category": "Commit Harbor",
+        "icon": "$(git-commit)"
+      },
+      {
+        "command": "commitharbor.log.openInEditor",
+        "title": "Open Git Log in Editor",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.openAnotherTab",
+        "title": "Open Another Log Tab",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.history.show",
+        "title": "Show History",
+        "category": "Commit Harbor",
+        "icon": "$(history)"
+      },
+      {
+        "command": "commitharbor.history.showForSelection",
+        "title": "Show History for Selection…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.history.showForDirectory",
+        "title": "Show History for Directory",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.copyRevision",
+        "title": "Log: copyRevision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.copySubject",
+        "title": "Log: copySubject",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.checkoutRevision",
+        "title": "Log: checkoutRevision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.showRepositoryAtRevision",
+        "title": "Log: showRepositoryAtRevision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.compareWithLocal",
+        "title": "Log: compareWithLocal",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.compareVersions",
+        "title": "Log: compareVersions",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.reset",
+        "title": "Log: reset",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.revert",
+        "title": "Log: revert",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.undo",
+        "title": "Log: undo",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.reword",
+        "title": "Log: reword",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.fixup",
+        "title": "Log: fixup",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.squash",
+        "title": "Log: squash",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.drop",
+        "title": "Log: drop",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.interactiveRebase",
+        "title": "Log: interactiveRebase",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.rebaseOnto",
+        "title": "Log: rebaseOnto",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.pushUpToHere",
+        "title": "Log: pushUpToHere",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.addToRemoteBranch",
+        "title": "Log: addToRemoteBranch",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.cherryPick",
+        "title": "Log: cherryPick",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.newBranch",
+        "title": "Log: newBranch",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.newTag",
+        "title": "Log: newTag",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.createPatch",
+        "title": "Log: createPatch",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.openOnHosting",
+        "title": "Log: openOnHosting",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.showDiff",
+        "title": "Log: file.showDiff",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.showDiffBeside",
+        "title": "Log: file.showDiffBeside",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.compareWithLocal",
+        "title": "Log: file.compareWithLocal",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.compareBeforeWithLocal",
+        "title": "Log: file.compareBeforeWithLocal",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.editSource",
+        "title": "Log: file.editSource",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.openRevision",
+        "title": "Log: file.openRevision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.getFromRevision",
+        "title": "Log: file.getFromRevision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.history",
+        "title": "Log: file.history",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.revertSelected",
+        "title": "Log: file.revertSelected",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.cherryPickSelected",
+        "title": "Log: file.cherryPickSelected",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.extractSelected",
+        "title": "Log: file.extractSelected",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.file.dropSelected",
+        "title": "Log: file.dropSelected",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.toggle",
+        "title": "Annotate with Git Blame",
+        "category": "Commit Harbor",
+        "icon": "$(account)"
+      },
+      {
+        "command": "commitharbor.annotate.close",
+        "title": "Close Annotations",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.revision",
+        "title": "Annotate Revision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.previousRevision",
+        "title": "Annotate Previous Revision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.hideRevision",
+        "title": "Hide Revision (Annotate)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.restoreHidden",
+        "title": "Restore Hidden Revisions (Annotate)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.showDiff",
+        "title": "Show Diff (Annotate)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.copyRevision",
+        "title": "Copy Revision Number (Annotate)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.openOnHosting",
+        "title": "Open on GitHub (Annotate)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.annotate.toggleCodeVision",
+        "title": "Toggle Code Vision: Code Author",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gutter.revert",
+        "title": "Rollback Lines",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gutter.copy",
+        "title": "Copy",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gutter.stage",
+        "title": "Stage",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gutter.moveToChangelist",
+        "title": "Move Lines to Another Changelist…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.withBranch",
+        "title": "Compare with Branch or Tag…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.withRevision",
+        "title": "Compare with Revision…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.withHead",
+        "title": "Show Diff",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.withClipboard",
+        "title": "Compare with Clipboard",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.withEditor",
+        "title": "Compare File with Editor",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.blank",
+        "title": "Open Blank Diff Window",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.selected",
+        "title": "Compare Files",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.compare.selectedDirectories",
+        "title": "Compare Directories",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.diff.compareThreeVersions",
+        "title": "Compare HEAD, Staged and Local Versions",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hosting.openFile",
+        "title": "Open on GitHub / GitLab (File)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hosting.openLine",
+        "title": "Open on GitHub / GitLab (Line)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hosting.copyLink",
+        "title": "Copy Link to Line",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hosting.openRepository",
+        "title": "Open Repository in Browser",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.hosting.newPullRequest",
+        "title": "New Pull Request in Browser",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.github.share",
+        "title": "Share Project on GitHub…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.github.settings",
+        "title": "GitHub Accounts and Settings…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.github.createGist",
+        "title": "Create Gist…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.github.syncFork",
+        "title": "Sync Fork",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.github.checkoutPullRequest",
+        "title": "Checkout Pull Request…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.github.loadProtectedBranches",
+        "title": "Load Branch Protection Rules from GitHub",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.github.viewPullRequests",
+        "title": "View Pull Requests",
+        "category": "Commit Harbor",
+        "icon": "$(git-pull-request)"
+      },
+      {
+        "command": "commitharbor.github.createPullRequest",
+        "title": "Create Pull Request…",
+        "category": "Commit Harbor",
+        "icon": "$(git-pull-request-create)"
+      },
+      {
+        "command": "commitharbor.hunk.split",
+        "title": "Split Chunk and Include Selected Lines into Commit",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.console.clear",
+        "title": "Clear Git Console",
+        "category": "Commit Harbor",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "commitharbor.gutter.showDiff",
+        "title": "Show Diff for Lines",
+        "category": "Commit Harbor",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "commitharbor.gutter.showPopup",
+        "title": "Show Change Popup",
+        "category": "Commit Harbor",
+        "icon": "$(git-commit)"
+      },
+      {
+        "command": "commitharbor.gutter.previousChange",
+        "title": "Previous Change",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "commitharbor.gutter.nextChange",
+        "title": "Next Change",
+        "category": "Commit Harbor",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "commitharbor.setup.workspace",
+        "title": "Set Up Workspace Like WebStorm",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.setup.restore",
+        "title": "Restore VS Code Defaults",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.dev.reloadWebviews",
+        "title": "Reload Webviews (development)",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.toggleBranches",
+        "title": "Show Git Branches",
+        "category": "Commit Harbor",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "commitharbor.log.toggleDetails",
+        "title": "Show Details",
+        "category": "Commit Harbor",
+        "icon": "$(note)"
+      },
+      {
+        "command": "commitharbor.commit.file",
+        "title": "Commit File…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.showCurrentRevision",
+        "title": "Show Current Revision",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.resetHead",
+        "title": "Reset HEAD…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.settings.git",
+        "title": "Git Settings",
+        "category": "Commit Harbor",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "commitharbor.appearance.open",
+        "title": "Appearance…",
+        "category": "Commit Harbor",
+        "icon": "$(symbol-color)"
+      },
+      {
+        "command": "commitharbor.commit.generateMessage",
+        "title": "Generate Commit Message with AI",
+        "category": "Commit Harbor",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "commitharbor.commit.improveMessage",
+        "title": "Improve Commit Message with AI",
+        "category": "Commit Harbor",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "commitharbor.ai.selectModel",
+        "title": "Select Language Model for AI Actions…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.mcp.show",
+        "title": "AI Agents (MCP)…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.mcp.copyConfiguration",
+        "title": "Copy MCP Server Configuration…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.log.explainCommit",
+        "title": "Log: explainCommit",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.bisect.start",
+        "title": "Start Bisect",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.bisect.good",
+        "title": "Bisect: Mark Good",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.bisect.bad",
+        "title": "Bisect: Mark Bad",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.bisect.skip",
+        "title": "Bisect: Skip",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.bisect.reset",
+        "title": "Bisect: Reset",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.lfs.track",
+        "title": "Track Files with Git LFS…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.lfs.untrack",
+        "title": "Untrack Files from Git LFS…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.lfs.fetch",
+        "title": "Fetch LFS Objects",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.lfs.pull",
+        "title": "Pull LFS Objects",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.localHistory.show",
+        "title": "Show Local History",
+        "category": "Commit Harbor",
+        "icon": "$(history)"
+      },
+      {
+        "command": "commitharbor.localHistory.putLabel",
+        "title": "Put Label…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.popup",
+        "title": "Git Flow…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.init",
+        "title": "Git Flow: Init Repo…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.startFeature",
+        "title": "Git Flow: Start Feature…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.finishFeature",
+        "title": "Git Flow: Finish Feature…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.startRelease",
+        "title": "Git Flow: Start Release…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.finishRelease",
+        "title": "Git Flow: Finish Release…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.startHotfix",
+        "title": "Git Flow: Start Hotfix…",
+        "category": "Commit Harbor"
+      },
+      {
+        "command": "commitharbor.gitflow.finishHotfix",
+        "title": "Git Flow: Finish Hotfix…",
+        "category": "Commit Harbor"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "commitharbor.git",
+        "label": "Git"
+      },
+      {
+        "id": "commitharbor.git.github",
+        "label": "GitHub"
+      },
+      {
+        "id": "commitharbor.git.lfs",
+        "label": "Git LFS"
+      },
+      {
+        "id": "commitharbor.git.bisect",
+        "label": "Bisect"
+      },
+      {
+        "id": "commitharbor.localHistory",
+        "label": "Local History"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "commitharbor.settings.git",
+          "when": "view == commitharbor.commit || view == commitharbor.log",
+          "group": "9_settings@1"
+        },
+        {
+          "command": "commitharbor.appearance.open",
+          "when": "view == commitharbor.commit || view == commitharbor.log",
+          "group": "9_settings@2"
+        },
+        {
+          "command": "commitharbor.mcp.show",
+          "when": "view == commitharbor.commit || view == commitharbor.log",
+          "group": "9_settings@3"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "commitharbor.git",
+          "when": "commitharbor.hasRepositories && resourceScheme == file",
+          "group": "commitharbor@0"
+        },
+        {
+          "command": "commitharbor.hunk.toggle",
+          "when": "commitharbor.hasRepositories && resourceScheme == file",
+          "group": "commitharbor@1"
+        },
+        {
+          "command": "commitharbor.hosting.openLine",
+          "when": "commitharbor.hasRepositories && resourceScheme == file",
+          "group": "commitharbor@6"
+        },
+        {
+          "command": "commitharbor.hosting.copyLink",
+          "when": "commitharbor.hasRepositories && resourceScheme == file",
+          "group": "commitharbor@7"
+        },
+        {
+          "command": "commitharbor.hunk.split",
+          "when": "commitharbor.hasRepositories && resourceScheme == file",
+          "group": "commitharbor@1"
+        },
+        {
+          "command": "commitharbor.github.createGist",
+          "when": "resourceScheme == file",
+          "group": "commitharbor@9"
+        },
+        {
+          "submenu": "commitharbor.localHistory",
+          "when": "resourceScheme == file",
+          "group": "commitharbor@2"
+        }
+      ],
+      "explorer/context": [
+        {
+          "submenu": "commitharbor.git",
+          "when": "commitharbor.hasRepositories && resourceScheme == file",
+          "group": "commitharbor@0"
+        },
+        {
+          "submenu": "commitharbor.localHistory",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "commitharbor@2"
+        },
+        {
+          "command": "commitharbor.github.createGist",
+          "when": "resourceScheme == file && !explorerResourceIsFolder",
+          "group": "commitharbor@9"
+        },
+        {
+          "command": "commitharbor.compare.selected",
+          "when": "listDoubleSelection && !explorerResourceIsFolder && resourceScheme == file",
+          "group": "3_compare@9"
+        },
+        {
+          "command": "commitharbor.compare.selectedDirectories",
+          "when": "listDoubleSelection && explorerResourceIsFolder && resourceScheme == file",
+          "group": "3_compare@9"
+        }
+      ],
+      "view/item/context": [],
+      "commandPalette": [
+        {
+          "command": "commitharbor.backgroundTasks.cancel",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.stash.showDiff",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.stash.show",
+          "when": "commitharbor.stashTabVisible && !config.commitharbor.stash.combineWithShelf"
+        },
+        {
+          "command": "commitharbor.stash.showWithShelf",
+          "when": "config.commitharbor.stash.combineWithShelf"
+        },
+        {
+          "command": "commitharbor.stash.unstashAs",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.stash.files",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.shelf.showDiff",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.shelf.restore",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.patch.save",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.worktrees.open",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.worktrees.openHere",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.worktrees.delete",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.worktrees.toggleLock",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.conflicts.merge",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.conflicts.acceptYours",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.conflicts.acceptTheirs",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.conflicts.markResolved",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.conflicts.revertResolution",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.rebase.interactive",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.copyRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.copySubject",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.checkoutRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.showRepositoryAtRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.compareWithLocal",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.compareVersions",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.reset",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.revert",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.undo",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.reword",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.fixup",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.squash",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.drop",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.interactiveRebase",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.rebaseOnto",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.pushUpToHere",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.addToRemoteBranch",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.cherryPick",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.newBranch",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.newTag",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.createPatch",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.openOnHosting",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.showDiff",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.showDiffBeside",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.compareWithLocal",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.compareBeforeWithLocal",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.editSource",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.openRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.getFromRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.history",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.revertSelected",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.cherryPickSelected",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.extractSelected",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.file.dropSelected",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.annotate.revision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.annotate.previousRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.annotate.hideRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.annotate.showDiff",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.annotate.copyRevision",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.annotate.openOnHosting",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.compare.selected",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.compare.selectedDirectories",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.log.explainCommit",
+          "when": "false"
+        },
+        {
+          "command": "commitharbor.bisect.good",
+          "when": "commitharbor.bisecting"
+        },
+        {
+          "command": "commitharbor.bisect.bad",
+          "when": "commitharbor.bisecting"
+        },
+        {
+          "command": "commitharbor.bisect.skip",
+          "when": "commitharbor.bisecting"
+        },
+        {
+          "command": "commitharbor.bisect.reset",
+          "when": "commitharbor.bisecting"
+        },
+        {
+          "command": "commitharbor.lfs.untrack",
+          "when": "commitharbor.lfsRepository"
+        },
+        {
+          "command": "commitharbor.lfs.fetch",
+          "when": "commitharbor.lfsRepository"
+        },
+        {
+          "command": "commitharbor.lfs.pull",
+          "when": "commitharbor.lfsRepository"
+        }
+      ],
+      "editor/lineNumber/context": [
+        {
+          "command": "commitharbor.annotate.toggle",
+          "when": "commitharbor.hasRepositories && resourceScheme == file && !commitharbor.annotated",
+          "group": "commitharbor@1"
+        },
+        {
+          "command": "commitharbor.annotate.close",
+          "when": "commitharbor.annotated",
+          "group": "commitharbor@1"
+        }
+      ],
+      "scm/change/title": [
+        {
+          "command": "commitharbor.gutter.revert",
+          "when": "commitharbor.hasRepositories",
+          "group": "commitharbor@1"
+        },
+        {
+          "command": "commitharbor.gutter.showDiff",
+          "when": "commitharbor.hasRepositories",
+          "group": "commitharbor@2"
+        },
+        {
+          "command": "commitharbor.gutter.copy",
+          "when": "commitharbor.hasRepositories",
+          "group": "commitharbor@3"
+        },
+        {
+          "command": "commitharbor.gutter.stage",
+          "when": "commitharbor.hasRepositories",
+          "group": "commitharbor@4"
+        },
+        {
+          "command": "commitharbor.gutter.moveToChangelist",
+          "when": "commitharbor.hasRepositories",
+          "group": "commitharbor@5"
+        }
+      ],
+      "commitharbor.git": [
+        {
+          "command": "commitharbor.commit.file",
+          "group": "1_add@0"
+        },
+        {
+          "command": "commitharbor.addToVcs",
+          "when": "explorerResourceIsFolder || resourcePath in commitharbor.unversionedFiles",
+          "group": "1_add@1"
+        },
+        {
+          "command": "commitharbor.ignore.add",
+          "when": "resourcePath in commitharbor.unversionedFiles",
+          "group": "1_add@2"
+        },
+        {
+          "command": "commitharbor.annotate.toggle",
+          "when": "editorTextFocus && !commitharbor.annotated",
+          "group": "2_file@1"
+        },
+        {
+          "command": "commitharbor.annotate.close",
+          "when": "editorTextFocus && commitharbor.annotated",
+          "group": "2_file@1"
+        },
+        {
+          "command": "commitharbor.compare.withHead",
+          "when": "!explorerResourceIsFolder",
+          "group": "2_file@2"
+        },
+        {
+          "command": "commitharbor.compare.withRevision",
+          "when": "!explorerResourceIsFolder",
+          "group": "2_file@3"
+        },
+        {
+          "command": "commitharbor.compare.withBranch",
+          "group": "2_file@4"
+        },
+        {
+          "command": "commitharbor.history.show",
+          "when": "!explorerResourceIsFolder",
+          "group": "2_file@5"
+        },
+        {
+          "command": "commitharbor.history.showForDirectory",
+          "when": "explorerResourceIsFolder",
+          "group": "2_file@5"
+        },
+        {
+          "command": "commitharbor.history.showForSelection",
+          "when": "editorTextFocus",
+          "group": "2_file@6"
+        },
+        {
+          "command": "commitharbor.showCurrentRevision",
+          "group": "2_file@7",
+          "when": "!explorerResourceIsFolder"
+        },
+        {
+          "command": "commitharbor.rollback",
+          "group": "3_rollback@1"
+        },
+        {
+          "command": "commitharbor.conflicts.show",
+          "when": "commitharbor.hasConflicts",
+          "group": "4_conflicts@1"
+        },
+        {
+          "command": "commitharbor.conflicts.revertResolution",
+          "when": "commitharbor.operationInProgress",
+          "group": "4_conflicts@2"
+        },
+        {
+          "command": "commitharbor.push.dialog",
+          "group": "5_remote@1"
+        },
+        {
+          "command": "commitharbor.pull.dialog",
+          "group": "5_remote@2"
+        },
+        {
+          "command": "commitharbor.fetch",
+          "group": "5_remote@3"
+        },
+        {
+          "command": "commitharbor.merge.dialog",
+          "group": "6_merge@1"
+        },
+        {
+          "command": "commitharbor.rebase.dialog",
+          "group": "6_merge@2"
+        },
+        {
+          "command": "commitharbor.branches.popup",
+          "group": "7_branches@1"
+        },
+        {
+          "command": "commitharbor.branches.new",
+          "group": "7_branches@2"
+        },
+        {
+          "command": "commitharbor.tags.new",
+          "group": "7_branches@3"
+        },
+        {
+          "command": "commitharbor.resetHead",
+          "group": "7_branches@4"
+        },
+        {
+          "command": "commitharbor.gitflow.popup",
+          "group": "7_branches@5"
+        },
+        {
+          "submenu": "commitharbor.git.bisect",
+          "when": "commitharbor.bisecting",
+          "group": "7_branches@6"
+        },
+        {
+          "command": "commitharbor.stash.show",
+          "when": "commitharbor.stashTabVisible && !config.commitharbor.stash.combineWithShelf",
+          "group": "8_stash@0"
+        },
+        {
+          "command": "commitharbor.stash.showWithShelf",
+          "when": "config.commitharbor.stash.combineWithShelf",
+          "group": "8_stash@0"
+        },
+        {
+          "command": "commitharbor.stash.create",
+          "group": "8_stash@1"
+        },
+        {
+          "command": "commitharbor.stash.unstash",
+          "group": "8_stash@2"
+        },
+        {
+          "submenu": "commitharbor.git.github",
+          "group": "9_remotes@1"
+        },
+        {
+          "submenu": "commitharbor.git.lfs",
+          "group": "9_remotes@4"
+        },
+        {
+          "command": "commitharbor.remotes.manage",
+          "group": "9_remotes@2"
+        },
+        {
+          "command": "commitharbor.clone",
+          "group": "9_remotes@3"
+        }
+      ],
+      "commitharbor.git.github": [
+        {
+          "command": "commitharbor.github.createPullRequest",
+          "group": "1_pr@1"
+        },
+        {
+          "command": "commitharbor.github.viewPullRequests",
+          "group": "1_pr@2"
+        },
+        {
+          "command": "commitharbor.github.checkoutPullRequest",
+          "group": "1_pr@3"
+        },
+        {
+          "command": "commitharbor.hosting.newPullRequest",
+          "group": "1_pr@4"
+        },
+        {
+          "command": "commitharbor.github.syncFork",
+          "group": "2_github@1"
+        },
+        {
+          "command": "commitharbor.github.createGist",
+          "group": "2_github@2"
+        },
+        {
+          "command": "commitharbor.hosting.openFile",
+          "group": "2_github@3"
+        }
+      ],
+      "commitharbor.git.lfs": [
+        {
+          "command": "commitharbor.lfs.track",
+          "group": "1_track@1"
+        },
+        {
+          "command": "commitharbor.lfs.untrack",
+          "when": "commitharbor.lfsRepository",
+          "group": "1_track@2"
+        },
+        {
+          "command": "commitharbor.lfs.fetch",
+          "when": "commitharbor.lfsRepository",
+          "group": "2_transfer@1"
+        },
+        {
+          "command": "commitharbor.lfs.pull",
+          "when": "commitharbor.lfsRepository",
+          "group": "2_transfer@2"
+        }
+      ],
+      "commitharbor.git.bisect": [
+        {
+          "command": "commitharbor.bisect.good",
+          "group": "1_mark@1"
+        },
+        {
+          "command": "commitharbor.bisect.bad",
+          "group": "1_mark@2"
+        },
+        {
+          "command": "commitharbor.bisect.skip",
+          "group": "1_mark@3"
+        },
+        {
+          "command": "commitharbor.bisect.reset",
+          "group": "2_reset@1"
+        }
+      ],
+      "commitharbor.localHistory": [
+        {
+          "command": "commitharbor.localHistory.show",
+          "group": "1_history@1"
+        },
+        {
+          "command": "commitharbor.localHistory.putLabel",
+          "group": "1_history@2"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "commitharbor.github.createGist",
+          "when": "resourceScheme == file",
+          "group": "commitharbor@9"
+        }
+      ]
+    },
+    "configuration": [
+      {
+        "id": "commitharbor.git",
+        "title": "Git",
+        "order": 1,
+        "properties": {
+          "commitharbor.git.path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "default": null,
+            "markdownDescription": "**Path to Git executable.** Empty: auto-detected (the path of the built-in Git extension, `git.path`, or `git` on the PATH). Set it in the Workspace settings for \"Set this path only for the current project\". **Test** in the [Git Settings](command:commitharbor.settings.git) page runs `git --version`; a new path applies without reloading the window.",
+            "scope": "machine-overridable",
+            "order": 1
+          },
+          "commitharbor.commit.enableStagingArea": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "**Enable staging area.** This will disable changelists support. Only for non-modal commit interface.\n\nThe Commit tool window shows Staged / Unstaged / Unversioned like git itself.",
+            "order": 2
+          },
+          "commitharbor.commit.warnCrlf": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Warn if CRLF line separators are about to be committed (while `core.autocrlf` is not set): the \"Line Separators Warning\" dialog with Fix and Commit / Commit As Is.",
+            "order": 3
+          },
+          "commitharbor.commit.warnDetached": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Warn when committing in detached HEAD or during rebase (a problem above the commit buttons with Commit Anyway).",
+            "order": 4
+          },
+          "commitharbor.commit.warnLargeFiles": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Warn when committing files larger than `#commitharbor.commit.warnLargeFilesLimitMb#` MB. Repositories that use Git LFS are not checked.",
+            "order": 5
+          },
+          "commitharbor.commit.warnLargeFilesLimitMb": {
+            "type": "integer",
+            "default": 50,
+            "minimum": 1,
+            "maximum": 100000,
+            "markdownDescription": "Size, in MB, over which `#commitharbor.commit.warnLargeFiles#` warns about a committed file.",
+            "order": 6
+          },
+          "commitharbor.commit.warnBadFileNames": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Warn when committing files with names that might cause issues on other systems (names reserved on Windows such as `CON` or `aux.txt`, or characters like `<>:\"|?*`). Not checked on Windows.",
+            "order": 7
+          },
+          "commitharbor.cherryPick.addSuffix": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Add the 'cherry-picked from <hash>' suffix when picking commits pushed to protected branches (`git cherry-pick -x`).",
+            "order": 8
+          },
+          "commitharbor.push.autoUpdateOnReject": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Auto-update if push of the current branch was rejected: update with the remembered method (`#commitharbor.push.rejectedUpdateMethod#`) and push again, without the Push Rejected dialog.",
+            "order": 9
+          },
+          "commitharbor.push.showDialogOnCommitAndPush": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Show Push dialog for Commit and Push.",
+            "order": 10
+          },
+          "commitharbor.push.showDialogOnlyForProtected": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Show Push dialog only when committing to protected branches (with `#commitharbor.push.showDialogOnCommitAndPush#` on).",
+            "order": 11
+          },
+          "commitharbor.push.protectedBranches": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "master",
+              "main"
+            ],
+            "markdownDescription": "Protected branches: patterns (regular expressions) of branches that must not be force-pushed or have their pushed commits rewritten. The Git Settings page edits them as `master;main`.",
+            "order": 12
+          },
+          "commitharbor.push.loadGitHubProtection": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Load branch protection rules from GitHub. GitHub rules are added to the local rules and synced on every fetch (with the GitHub account already logged in).",
+            "order": 13
+          },
+          "commitharbor.update.method": {
+            "type": "string",
+            "enum": [
+              "merge",
+              "rebase",
+              "branchDefault"
+            ],
+            "default": "merge",
+            "enumDescriptions": [
+              "Merge incoming changes into the current branch",
+              "Rebase the current branch on top of incoming changes",
+              "commit-harbor: follow `branch.<name>.rebase` / `pull.rebase` of the git config"
+            ],
+            "enumItemLabels": [
+              "Merge",
+              "Rebase",
+              "Branch Default"
+            ],
+            "markdownDescription": "Update method: how Update Project brings the incoming commits into the current branch (Merge by default, like the IDE).",
+            "order": 14
+          },
+          "commitharbor.update.saveChangesPolicy": {
+            "type": "string",
+            "enum": [
+              "stash",
+              "shelve"
+            ],
+            "default": "shelve",
+            "enumItemLabels": [
+              "Stash",
+              "Shelve"
+            ],
+            "markdownDescription": "Clean working tree using: how local changes are saved before an operation that needs a clean working tree (Update Project, Smart Checkout…) and restored after it.",
+            "order": 15
+          },
+          "commitharbor.update.filterPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "markdownDescription": "Filter \"Update Project\" information by paths: folders (absolute or relative to the first workspace folder) that filter the commits shown by View Commits after Update Project. Empty: All.",
+            "order": 16
+          },
+          "commitharbor.fetch.checkIncoming": {
+            "type": "string",
+            "default": "auto",
+            "enum": [
+              "auto",
+              "always",
+              "never"
+            ],
+            "enumItemLabels": [
+              "Auto",
+              "Always",
+              "Never"
+            ],
+            "enumDescriptions": [
+              "Check the remotes with `git ls-remote` (no fetch), except SSH remotes served by an external SSH agent",
+              "Check every remote",
+              "Do not check"
+            ],
+            "markdownDescription": "Explicitly check for incoming commits on remotes: after each fetch and every `#commitharbor.fetch.intervalMinutes#` minutes, mark the branches with unfetched commits in the Branches popup and panel. Older `true` / `false` values are read as Always / Never.",
+            "order": 17
+          },
+          "commitharbor.fetch.tags": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "sync",
+              "always",
+              "never"
+            ],
+            "default": "auto",
+            "enumDescriptions": [
+              "Follow git config",
+              "--prune-tags",
+              "--tags",
+              "--no-tags"
+            ],
+            "enumItemLabels": [
+              "Auto",
+              "Sync",
+              "Always",
+              "Never"
+            ],
+            "markdownDescription": "Fetch tags: which tags every fetch brings (Auto follows the git config).",
+            "order": 18
+          },
+          "commitharbor.branches.syncControl": {
+            "type": "string",
+            "enum": [
+              "notDecided",
+              "sync",
+              "dontSync"
+            ],
+            "default": "notDecided",
+            "description": "Execute branch operations on all roots when the workspace has several repositories on the same branch (WebStorm: Settings › Git › Execute branch operations on all roots).",
+            "order": 19
+          },
+          "commitharbor.git.useCredentialHelper": {
+            "type": "boolean",
+            "default": true,
+            "description": "Let git use the configured credential helper (system keychain). When off, git's helpers are disabled (`-c credential.helper=`) and Commit Harbor asks for credentials itself, answering from the passwords it remembered (\"Remember\" of the Log In dialog, see Passwords › Save passwords) (WebStorm: Settings › Git › Use credential helper).",
+            "order": 20
+          },
+          "commitharbor.stash.combineWithShelf": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show stashes and shelved changes in one tab of the Commit tool window, \"Stashes and Shelves\", in place of the Shelf tab (WebStorm: Combine stashes and shelves). Off, as in the IDE: a \"Stash\" tab after the Shelf only while there are stashes.",
+            "order": 21
+          },
+          "commitharbor.stash.compareWith": {
+            "type": "string",
+            "enum": [
+              "local",
+              "parent"
+            ],
+            "default": "local",
+            "description": "What Show Diff on a stash compares with: the local working tree or the stash's parent commit.",
+            "order": 22
+          },
+          "commitharbor.git.detectNestedRepositories": {
+            "type": "boolean",
+            "default": true,
+            "description": "Register by themselves the Git repositories found anywhere under the workspace folders (up to 5 levels deep, skipping hidden folders, node_modules, vendor and build output), as WebStorm does with the <Project> directory mapping. When off, Commit Harbor only reports them (\"N Git repositories are not registered\": Add Roots / Ignore).",
+            "order": 23
+          },
+          "commitharbor.git.ignoredRoots": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "Git repositories under the workspace folders that Commit Harbor never registers by itself: paths relative to a workspace folder (or absolute). \"Ignore\" of the \"not registered\" notification adds to it.",
+            "order": 24
+          }
+        }
+      },
+      {
+        "id": "commitharbor",
+        "title": "Commit Harbor",
+        "order": 2,
+        "properties": {
+          "commitharbor.keymap": {
+            "type": "string",
+            "enum": [
+              "vscode",
+              "jetbrains"
+            ],
+            "default": "vscode",
+            "description": "Keyboard shortcuts: VS Code native, or the JetBrains equivalents (Ctrl+K commit, Ctrl+Shift+K push, Ctrl+T update, Alt+9 log)."
+          },
+          "commitharbor.console.logCommands": {
+            "type": "boolean",
+            "default": true,
+            "description": "Log every git command run to the \"Commit Harbor\" output channel (the Console tab of WebStorm)."
+          },
+          "commitharbor.commit.signOff": {
+            "type": "boolean",
+            "default": false,
+            "description": "Add a Signed-off-by trailer to commits (git commit --signoff). Same as WebStorm's Sign-off commit option."
+          },
+          "commitharbor.commit.runHooks": {
+            "type": "boolean",
+            "default": true,
+            "description": "Run Git commit hooks (pre-commit, commit-msg). Uncheck to commit with --no-verify. WebStorm: Advanced Settings › Do not run Git commit hooks."
+          },
+          "commitharbor.commit.clearInitialMessage": {
+            "type": "boolean",
+            "default": false,
+            "description": "Do not prefill the commit message with the template or the previous message (WebStorm: Settings › Version Control › Commit › Clear initial commit message)."
+          },
+          "commitharbor.commit.closeAfterCommit": {
+            "type": "boolean",
+            "default": false,
+            "description": "Hide the Commit tool window after a successful commit."
+          },
+          "commitharbor.commit.inspections.subjectMaxLength": {
+            "type": "integer",
+            "default": 72,
+            "minimum": 0,
+            "description": "Warn when the commit subject is longer than this many characters (0 disables)."
+          },
+          "commitharbor.commit.inspections.bodyMaxLineLength": {
+            "type": "integer",
+            "default": 72,
+            "minimum": 0,
+            "description": "Warn when a body line is longer than this many characters (0 disables)."
+          },
+          "commitharbor.commit.inspections.requireBlankLineAfterSubject": {
+            "type": "boolean",
+            "default": true,
+            "description": "Warn when there is no blank line between the subject and the body."
+          },
+          "commitharbor.commit.inspections.spelling": {
+            "type": "boolean",
+            "default": true,
+            "description": "Underline misspelled words of the commit message with quick fixes (right click or Alt+Enter: suggestions, Save to dictionary), using a bundled English dictionary (WebStorm: commit message inspections › Spelling / Proofreading › Typo)."
+          },
+          "commitharbor.commit.spelling.words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [],
+            "description": "Words accepted by the commit message spell checker (\"Save to dictionary\" adds here when Code Spell Checker is not installed)."
+          },
+          "commitharbor.commit.spelling.shareWithCSpell": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Coexist with **Code Spell Checker** (cSpell): accept its `cSpell.words`, `cSpell.userWords` and `cSpell.ignoreWords`, and save \"Save to dictionary\" into `cSpell.userWords` when it is installed. cSpell cannot check webviews, so the commit message is still checked by Commit Harbor."
+          },
+          "commitharbor.commit.checks.reformatCode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Commit check: format the files to be committed with the document formatter before committing (WebStorm: Reformat code)."
+          },
+          "commitharbor.commit.checks.optimizeImports": {
+            "type": "boolean",
+            "default": false,
+            "description": "Commit check: run the 'Organize Imports' code action on the files to be committed."
+          },
+          "commitharbor.commit.checks.cleanup": {
+            "type": "boolean",
+            "default": false,
+            "description": "Commit check: apply the cleanup code actions (`commitharbor.commit.checks.cleanupActions`, 'Fix All' by default) to the files to be committed and save them (WebStorm: Cleanup)."
+          },
+          "commitharbor.commit.checks.cleanupActions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "source.fixAll"
+            ],
+            "markdownDescription": "Code action kinds applied by the **Cleanup** commit check, in order: VS Code's counterpart of WebStorm's cleanup inspection profile (\"Cleanup with '<profile>' profile\"). E.g. `source.fixAll.eslint`, `source.organizeImports`, `source.addMissingImports.ts`."
+          },
+          "commitharbor.commit.checks.analyzeCode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Commit check: report the errors and warnings of the files to be committed, with Review code analysis (WebStorm: Analyze code)."
+          },
+          "commitharbor.commit.checks.analyzeSeverity": {
+            "type": "string",
+            "enum": [
+              "warning",
+              "error"
+            ],
+            "enumDescriptions": [
+              "Errors and warnings, as WebStorm's code analysis.",
+              "Only errors."
+            ],
+            "default": "warning",
+            "description": "Diagnostics that the Analyze code commit check reports (the inspection profile's severities in WebStorm)."
+          },
+          "commitharbor.commit.checks.checkTodo": {
+            "type": "boolean",
+            "default": false,
+            "description": "Commit check: warn when the added lines contain TODO items (WebStorm: Check TODO)."
+          },
+          "commitharbor.commit.checks.todoPattern": {
+            "type": "string",
+            "default": "\\b(TODO|FIXME|XXX|HACK)\\b",
+            "description": "Regular expression used by the Check TODO commit check."
+          },
+          "commitharbor.commit.checks.runTask": {
+            "type": "string",
+            "default": "",
+            "description": "Commit check: label of a tasks.json task to run before committing; a non-zero exit code asks for confirmation (WebStorm: Run tool / Run configuration)."
+          },
+          "commitharbor.commit.checks.runAdvancedChecksAfter": {
+            "type": "boolean",
+            "default": false,
+            "description": "Run the advanced commit checks (Analyze code, Check TODO, Run task) after the commit is created and report problems in a notification instead of blocking the commit (WebStorm: Run advanced checks after a commit is done)."
+          },
+          "commitharbor.commit.groupBy": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "directory",
+                "module",
+                "repository"
+              ]
+            },
+            "uniqueItems": true,
+            "default": [
+              "directory"
+            ],
+            "description": "Group By of the Commit tool window (WebStorm: View Options › Group By): any combination of directory, module (nearest package.json) and repository (multi-root workspaces); empty for a flat list."
+          },
+          "commitharbor.commit.commitAllWhenNothingStaged": {
+            "type": "boolean",
+            "default": false,
+            "description": "Staging area: commit every tracked change when nothing is staged; the Commit button reads \"Commit All\" (WebStorm: Commit All when Nothing Is Staged)."
+          },
+          "commitharbor.commit.doubleClickOpens": {
+            "type": "string",
+            "enum": [
+              "diff",
+              "source"
+            ],
+            "default": "diff",
+            "description": "What double-click / Enter opens for a changed file in the Commit tool window (WebStorm: View Options › Show on Double-Click)."
+          },
+          "commitharbor.commit.diffInSeparateWindow": {
+            "type": "boolean",
+            "default": false,
+            "description": "Open diffs from the Commit tool window in a new editor group (WebStorm: Show Diff in Separate Window)."
+          },
+          "commitharbor.commit.showCommitControls": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the commit message editor and buttons in the Commit tool window (WebStorm: Advanced Settings › Toggle commit controls)."
+          },
+          "commitharbor.changelists.highlightInactive": {
+            "type": "boolean",
+            "default": true,
+            "description": "Highlight (dim) files from inactive changelists (WebStorm: Settings › Version Control › Changelists)."
+          },
+          "commitharbor.changelists.highlightConflicts": {
+            "type": "boolean",
+            "default": true,
+            "description": "Highlight files with changelist conflicts: files modified while they belonged to an inactive changelist (WebStorm: Settings › Version Control › Changelists)."
+          },
+          "commitharbor.changelists.onEditInactive": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "shelve",
+              "move",
+              "switch",
+              "ignore"
+            ],
+            "default": "ask",
+            "description": "What to do when a file from an inactive changelist is edited: ask, shelve the changes, move the file to the active changelist, switch the active changelist, or do nothing (WebStorm: Show dialog on attempt to edit file from inactive changelist)."
+          },
+          "commitharbor.changelists.emptyInactivePolicy": {
+            "type": "string",
+            "enum": [
+              "keep",
+              "removeSilently"
+            ],
+            "default": "keep",
+            "description": "When an empty changelist becomes inactive: keep it or remove it silently (WebStorm: Settings › Changelists)."
+          },
+          "commitharbor.fetch.auto": {
+            "type": "boolean",
+            "default": false,
+            "description": "Fetch automatically every N minutes (WebStorm: Settings › Version Control › Git › Fetch automatically)."
+          },
+          "commitharbor.fetch.intervalMinutes": {
+            "type": "number",
+            "default": 20,
+            "minimum": 1,
+            "description": "Interval, in minutes, of the automatic fetch."
+          },
+          "commitharbor.fetch.prune": {
+            "type": "boolean",
+            "default": true,
+            "description": "Remove remote-tracking references that no longer exist on the remote when fetching (`--prune`)."
+          },
+          "commitharbor.update.showOptions": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the update options before Update Project (WebStorm: Confirmation › Show options before Update)."
+          },
+          "commitharbor.update.filterByPaths": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Filter the Update Project information by the workspace folders.",
+            "markdownDeprecationMessage": "Use `#commitharbor.update.filterPaths#`; `true` is still read as the workspace folders."
+          },
+          "commitharbor.update.updateSubmodules": {
+            "type": "boolean",
+            "default": true,
+            "description": "After Update Project, submodules in detached HEAD check out the commit their parent records (`git submodule update --recursive -- <path>`), with their local changes saved and restored, as WebStorm does. Submodules on a branch are updated from their own tracked branch."
+          },
+          "commitharbor.push.rejectedUpdateMethod": {
+            "type": "string",
+            "enum": [
+              "merge",
+              "rebase"
+            ],
+            "default": "merge",
+            "description": "Update method remembered from the Push Rejected dialog."
+          },
+          "commitharbor.push.warnForce": {
+            "type": "boolean",
+            "default": true,
+            "description": "Ask for confirmation before a force push (WebStorm Advanced Settings: Disable force-push warning)."
+          },
+          "commitharbor.passwords.storage": {
+            "type": "string",
+            "enum": [
+              "keychain",
+              "memory"
+            ],
+            "enumDescriptions": [
+              "In native Keychain: VS Code's secret storage (macOS Keychain, Windows Credential Manager, libsecret).",
+              "Do not save, forget passwords after restart. Switching to it removes the passwords Commit Harbor saved in the keychain."
+            ],
+            "default": "keychain",
+            "markdownDescription": "Where the passwords remembered by the **Log In** dialog are saved (WebStorm: Settings › Appearance & Behavior › System Settings › Passwords › Save passwords). KeePass has no counterpart in VS Code."
+          },
+          "commitharbor.shelf.location": {
+            "type": "string",
+            "default": "",
+            "description": "Directory where shelved changes are stored (empty: the extension's global storage). WebStorm: Change Shelves Location."
+          },
+          "commitharbor.shelf.baseRevisions": {
+            "type": "boolean",
+            "default": true,
+            "description": "Shelve base revisions of files under DVCS (allows three-way unshelve)."
+          },
+          "commitharbor.shelf.removeOnUnshelve": {
+            "type": "boolean",
+            "default": false,
+            "description": "Remove successfully applied files from the shelf after unshelving (WebStorm: Settings › Shelf)."
+          },
+          "commitharbor.merge.autoApplyNonConflicting": {
+            "type": "boolean",
+            "default": false,
+            "description": "Automatically apply non-conflicting changes when resolving conflicts (WebStorm: Settings › Version Control › Confirmation)."
+          },
+          "commitharbor.merge.iterativeDialog": {
+            "type": "boolean",
+            "default": false,
+            "description": "Resolve conflicts with the iterative Conflicts dialog of recent IntelliJ versions (Unresolved / Resolved groups, Resolve All Simple Conflicts, Accept and Finish) instead of the classic one (Accept Yours / Accept Theirs / Merge…)."
+          },
+          "commitharbor.confirmation.addOnCreate": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "silently",
+              "doNothing"
+            ],
+            "default": "ask",
+            "description": "When files are created in the editor: ask whether to add them to Git, add silently, or do nothing (WebStorm: Settings › Version Control › Confirmation)."
+          },
+          "commitharbor.confirmation.removeOnDelete": {
+            "type": "string",
+            "enum": [
+              "ask",
+              "silently",
+              "doNothing"
+            ],
+            "default": "ask",
+            "description": "When tracked files are deleted in the editor: ask whether to remove them from Git, remove silently, or do nothing."
+          },
+          "commitharbor.patch.confirmation": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show a confirmation when a patch is created (WebStorm: Confirmation › When patch is created)."
+          },
+          "commitharbor.patch.detectOnTheFly": {
+            "type": "boolean",
+            "default": false,
+            "description": "When the window gets the focus and the clipboard holds a patch copied in another application, open Apply Patch with it (WebStorm: \"Analyze and apply patch from clipboard on the fly\", the checkbox of the Apply Patch from Clipboard dialog)."
+          },
+          "commitharbor.branches.restoreWorkspace": {
+            "type": "boolean",
+            "default": false,
+            "description": "Restore the open editors when switching back to a branch (WebStorm: Confirmation › Restore workspace when switching branches)."
+          },
+          "commitharbor.issueNavigation.links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "pattern": {
+                  "type": "string"
+                },
+                "link": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "pattern",
+                "link"
+              ]
+            },
+            "default": [],
+            "description": "Issue navigation rules: regular expression for issue ids and the link they open, with $0, $1… groups (WebStorm: Settings › Version Control › Issue Navigation)."
+          },
+          "commitharbor.github.cloneUsingSsh": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use SSH URLs when cloning from a GitHub account (WebStorm: Settings › GitHub › Clone using ssh)."
+          },
+          "commitharbor.github.connectionTimeout": {
+            "type": "number",
+            "default": 5000,
+            "minimum": 1000,
+            "description": "Connection timeout, in milliseconds, for GitHub API requests (WebStorm: Settings › GitHub › Connection timeout, shown in seconds by the \"GitHub Accounts and Settings…\" dialog)."
+          },
+          "commitharbor.github.defaultAccount": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Login of the GitHub account used by Share, Gist, Clone, Sync Fork and the CI checks column (WebStorm: Settings › GitHub › Set as Default, kept per project). Empty: the only account, or the one VS Code granted. Managed with **Commit Harbor: GitHub Accounts and Settings…**, which also adds accounts with a token."
+          },
+          "commitharbor.github.enterpriseServer": {
+            "type": "string",
+            "default": "",
+            "description": "GitHub Enterprise server URL (empty: github.com)."
+          },
+          "commitharbor.annotate.format": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "revision",
+                "date",
+                "author",
+                "commitNumber"
+              ]
+            },
+            "default": [
+              "date",
+              "author"
+            ],
+            "description": "Fields shown by Annotate (WebStorm: Annotate › View)."
+          },
+          "commitharbor.annotate.dateFormat": {
+            "type": "string",
+            "enum": [
+              "short",
+              "medium",
+              "iso",
+              "relative"
+            ],
+            "default": "short",
+            "description": "Date format of the annotations (WebStorm: Settings › Version Control › Date format)."
+          },
+          "commitharbor.annotate.showTimestamp": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show the commit time next to the date in annotations (WebStorm: Annotate › Show Commit Timestamp)."
+          },
+          "commitharbor.annotate.ignoreWhitespace": {
+            "type": "boolean",
+            "default": false,
+            "description": "Annotate with `-w` (WebStorm: Annotate › Options › Ignore Whitespaces)."
+          },
+          "commitharbor.annotate.detectMovementsWithinFile": {
+            "type": "boolean",
+            "default": false,
+            "description": "Annotate with `-M` (WebStorm: Detect Movements Within File)."
+          },
+          "commitharbor.annotate.detectMovementsAcrossFiles": {
+            "type": "boolean",
+            "default": false,
+            "description": "Annotate with `-C` (WebStorm: Detect Movements Across Files)."
+          },
+          "commitharbor.annotate.names": {
+            "type": "string",
+            "enum": [
+              "initials",
+              "lastname",
+              "firstname",
+              "full",
+              "email"
+            ],
+            "enumDescriptions": [
+              "Initials",
+              "Last Name",
+              "First Name",
+              "Full Name",
+              "Email"
+            ],
+            "default": "lastname",
+            "description": "How annotations show authors (WebStorm: Annotate › View › Names)."
+          },
+          "commitharbor.annotate.colors": {
+            "type": "string",
+            "enum": [
+              "author",
+              "order",
+              "hide"
+            ],
+            "enumDescriptions": [
+              "A color per author",
+              "Newer commits get a stronger tint",
+              "No colors"
+            ],
+            "default": "order",
+            "description": "Background colors of the annotations in the desktop editor (WebStorm: Annotate › View › Colors)."
+          },
+          "commitharbor.editor.highlightRecentDays": {
+            "type": "number",
+            "default": 0,
+            "description": "Highlight files changed in the last N days in the Explorer (0 disables; WebStorm: Settings › Version Control › Highlight files changed in the last N days)."
+          },
+          "commitharbor.editor.highlightDirectories": {
+            "type": "boolean",
+            "default": true,
+            "description": "Highlight directories that contain modified files (WebStorm: Settings › Version Control)."
+          },
+          "commitharbor.editor.highlightInErrorStripe": {
+            "type": "boolean",
+            "default": true,
+            "description": "Highlight modified lines in the error stripe as well as in the gutter (WebStorm: Settings › Version Control). Writes `scm.diffDecorations` (`all` / `gutter`)."
+          },
+          "commitharbor.editor.showWhitespaceOnlyChanges": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show whitespace-only changes in the gutter (WebStorm: Settings › Version Control). Writes `scm.diffDecorationsIgnoreTrimWhitespace`; VS Code cannot give them a color of their own."
+          },
+          "commitharbor.push.updateAllRootsOnReject": {
+            "type": "boolean",
+            "default": true,
+            "description": "When a push is rejected, update all repositories of the workspace before retrying, not only the rejected one (WebStorm: Push Rejected › Update all repositories)."
+          },
+          "commitharbor.changelists.createAutomatically": {
+            "type": "boolean",
+            "default": false,
+            "description": "Create a changelist automatically for the changes of a cherry-pick, revert, unshelve or applied patch (WebStorm: Settings › Changelists)."
+          },
+          "commitharbor.changelists.allowPartial": {
+            "type": "boolean",
+            "default": false,
+            "description": "Allow putting changes within one file into different changelists (WebStorm: Settings › Changelists)."
+          },
+          "commitharbor.annotate.codeVision": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show the latest author of each symbol above it (WebStorm: Code Vision › Code author)."
+          },
+          "commitharbor.hosting.servers": {
+            "type": "object",
+            "default": {},
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "github",
+                "gitlab",
+                "bitbucket",
+                "gitea",
+                "azure"
+              ]
+            },
+            "description": "Hosting service of self-hosted servers by host name, e.g. {\"git.example.com\": \"gitlab\"} (WebStorm: Settings › Version Control › GitLab / GitHub servers)."
+          },
+          "commitharbor.commit.showDiffPreview": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show an embedded diff preview of the selected file in the Commit view (WebStorm: View Options › Show Diff Preview)."
+          },
+          "commitharbor.appearance.theme": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "vscode",
+              "islands-dark",
+              "islands-light",
+              "islands-darcula",
+              "islands-high-contrast",
+              "new-ui-dark",
+              "new-ui-light",
+              "new-ui-light-header",
+              "darcula",
+              "intellij-light",
+              "high-contrast"
+            ],
+            "enumItemLabels": [
+              "Auto (New UI)",
+              "VS Code theme",
+              "Islands Dark",
+              "Islands Light",
+              "Islands Darcula",
+              "High Contrast",
+              "Dark",
+              "Light",
+              "Light with Light Header",
+              "Darcula",
+              "IntelliJ Light",
+              "High Contrast"
+            ],
+            "enumDescriptions": [
+              "New UI Dark or Light after the VS Code color theme: Commit Harbor's default look.",
+              "The colors and fonts of the active VS Code color theme.",
+              "WebStorm's default dark theme (Islands).",
+              "WebStorm's default light theme (Islands).",
+              "Darcula colors with the Islands look.",
+              "The High Contrast theme of the Islands group.",
+              "The Dark theme of the New UI.",
+              "The Light theme of the New UI.",
+              "The Light theme of the New UI with a light header.",
+              "The classic Darcula theme.",
+              "The classic IntelliJ Light theme (Classic UI).",
+              "The classic High Contrast theme (Classic UI)."
+            ],
+            "default": "auto",
+            "markdownDescription": "Theme of the Commit Harbor views, like WebStorm's **Settings › Appearance › Theme**. `auto` keeps the New UI Dark or Light palette after the kind of the VS Code color theme; `vscode` follows the colors of the VS Code theme. [Commit Harbor: Appearance…](command:commitharbor.appearance.open) previews the themes and customizes them."
+          },
+          "commitharbor.appearance.syncWithOs": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Sync with OS: use `#commitharbor.appearance.preferredDarkTheme#` or `#commitharbor.appearance.preferredLightTheme#` after the kind (dark or light) of the VS Code color theme, instead of `#commitharbor.appearance.theme#`."
+          },
+          "commitharbor.appearance.preferredDarkTheme": {
+            "type": "string",
+            "enum": [
+              "islands-dark",
+              "islands-darcula",
+              "islands-high-contrast",
+              "new-ui-dark",
+              "darcula",
+              "high-contrast"
+            ],
+            "enumItemLabels": [
+              "Islands Dark",
+              "Islands Darcula",
+              "High Contrast",
+              "Dark",
+              "Darcula",
+              "High Contrast"
+            ],
+            "default": "islands-dark",
+            "markdownDescription": "Theme of the Commit Harbor views on a dark VS Code theme while `#commitharbor.appearance.syncWithOs#` is on (Preferred Theme › For Dark OS)."
+          },
+          "commitharbor.appearance.preferredLightTheme": {
+            "type": "string",
+            "enum": [
+              "islands-light",
+              "new-ui-light",
+              "new-ui-light-header",
+              "intellij-light"
+            ],
+            "enumItemLabels": [
+              "Islands Light",
+              "Light",
+              "Light with Light Header",
+              "IntelliJ Light"
+            ],
+            "default": "islands-light",
+            "markdownDescription": "Theme of the Commit Harbor views on a light VS Code theme while `#commitharbor.appearance.syncWithOs#` is on (Preferred Theme › For Light OS)."
+          },
+          "commitharbor.appearance.colorOverrides": {
+            "type": "object",
+            "default": {},
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+            },
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$",
+              "patternErrorMessage": "A color as #RGB, #RRGGBB or #RRGGBBAA."
+            },
+            "markdownDescription": "Customize colors: palette token → color over the theme, e.g. `{\"accent\": \"#ff8800\", \"bg-panel\": \"#202124\"}`. [Commit Harbor: Appearance…](command:commitharbor.appearance.open) lists every token, and imports and exports them."
+          },
+          "commitharbor.appearance.accent": {
+            "type": "string",
+            "default": "",
+            "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8}))?$",
+            "patternErrorMessage": "A color as #RGB, #RRGGBB or #RRGGBBAA, or empty for the accent of the theme.",
+            "markdownDescription": "Accent color of the Commit Harbor views: default button, focus ring, selected tab and progress. Empty: the accent of the theme. `#commitharbor.appearance.colorOverrides#` wins over it."
+          },
+          "commitharbor.appearance.useCustomFont": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Use `#commitharbor.appearance.uiFontFamily#` and `#commitharbor.appearance.uiFontSize#` in the Commit Harbor views instead of Inter 13 (Accessibility › Use custom font)."
+          },
+          "commitharbor.appearance.uiFontFamily": {
+            "type": "string",
+            "default": "Inter",
+            "markdownDescription": "UI font of the Commit Harbor views while `#commitharbor.appearance.useCustomFont#` is on."
+          },
+          "commitharbor.appearance.uiFontSize": {
+            "type": "number",
+            "default": 13,
+            "minimum": 6,
+            "maximum": 72,
+            "markdownDescription": "UI font size (px) of the Commit Harbor views while `#commitharbor.appearance.useCustomFont#` is on."
+          },
+          "commitharbor.appearance.editorFontFamily": {
+            "type": "string",
+            "default": "JetBrains Mono",
+            "description": "Monospaced font of diffs, commit messages and hashes in the Commit Harbor views (Editor › Font)."
+          },
+          "commitharbor.appearance.editorFontSize": {
+            "type": "number",
+            "default": 13,
+            "minimum": 6,
+            "maximum": 72,
+            "description": "Size (px) of the monospaced font in the Commit Harbor views (Editor › Font › Size)."
+          },
+          "commitharbor.appearance.compact": {
+            "type": "boolean",
+            "default": false,
+            "description": "Compact mode: 20px rows and smaller headers, like the IDE's compact mode."
+          },
+          "commitharbor.appearance.lookAndFeel": {
+            "type": "string",
+            "enum": [
+              "jetbrains",
+              "vscode"
+            ],
+            "enumDescriptions": [
+              "Paint the views with the IntelliJ New UI palette, typefaces and icons, like WebStorm.",
+              "Follow the colors and fonts of the active VS Code theme."
+            ],
+            "default": "jetbrains",
+            "description": "Look and feel of the Commit Harbor views.",
+            "markdownDeprecationMessage": "Use `#commitharbor.appearance.theme#` instead: `vscode` there is this `vscode`. Still read while that setting is not set."
+          },
+          "commitharbor.dialogs.mode": {
+            "type": "string",
+            "enum": [
+              "float",
+              "tab",
+              "quickpick"
+            ],
+            "enumDescriptions": [
+              "Open dialogs in a floating window, the closest thing to WebStorm's modal dialogs.",
+              "Open dialogs as editor tabs.",
+              "Use multi-step quick picks instead of dialogs."
+            ],
+            "default": "float",
+            "description": "How Commit Harbor dialogs (Pull, Merge, Rebase, Push…) are presented."
+          },
+          "commitharbor.popups.preferQuickPick": {
+            "type": "boolean",
+            "default": false,
+            "description": "Open the Branches and VCS Operations popups as native quick picks instead of the WebStorm-style popup."
+          },
+          "commitharbor.gutter.showHover": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the change popup (previous content and actions) when hovering changed lines, like WebStorm's gutter marker."
+          },
+          "commitharbor.dev.autoReload": {
+            "type": "boolean",
+            "default": true,
+            "description": "In the Extension Development Host, reload the webviews when their bundle changes and the window when the extension bundle changes."
+          },
+          "commitharbor.diff.viewer": {
+            "type": "string",
+            "enum": [
+              "commitharbor",
+              "native"
+            ],
+            "enumDescriptions": [
+              "The Commit Harbor diff viewer: two or three panes, Ignore / Highlighting modes of the IDE, chevrons that write into the working tree or the index, commit details header, Annotate and directory comparison.",
+              "The VS Code diff editor for two-side diffs (three-side diffs and directory comparisons still use the Commit Harbor viewer)."
+            ],
+            "default": "commitharbor",
+            "description": "Viewer for the diffs Commit Harbor opens from Compare with…, the Log, History, Annotate, stashes and the Push dialog (WebStorm: Settings › Tools › Diff & Merge). Show Diff of the Commit tool window keeps the VS Code editor, where the Include into Commit checkboxes live."
+          },
+          "commitharbor.backgroundTasks.statusBar": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show running Git operations in the status bar (title, progress bar and cancel button) with a Background Tasks popup, like WebStorm, instead of progress notifications."
+          },
+          "commitharbor.ai.model": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Language model of the AI actions (**Generate / Improve Commit Message with AI** in the Commit tool window, **Explain Commit** in the Log, **Merge with AI** in the Merge Revisions window): its family (such as `gpt-4o`, or `claude-code`, `codex`, `gemini-cli` for the AI command line tools), id or name, as **Commit Harbor: Select Language Model for AI Actions…** lists them. Empty: the first model offered — VS Code's Language Model API first (GitHub Copilot Chat or another provider), then the AI command line tools you have installed (see `#commitharbor.ai.cli.enabled#`). The diff of your changes is sent to it, with secret values (keys, tokens, passwords, `.env` files) replaced by `[REDACTED]`."
+          },
+          "commitharbor.ai.cli.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Offer the AI command line tools you have installed and signed in to — **Claude Code** (`claude`), **OpenAI Codex CLI** (`codex`), **Gemini CLI** (`gemini`) — as language models of the AI actions, with your own subscription. Commit Harbor asks once per tool before the first request, sends the prompt on standard input, runs the tool in an empty temporary folder with its tools turned off, and stores no credentials. The diff, commit or conflicts go to the tool's provider (Anthropic, OpenAI, Google) with secret values replaced by `[REDACTED]`."
+          },
+          "commitharbor.ai.cli.claudePath": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Path to the Claude Code executable (`claude`). Empty: looked for on the `PATH` and in the usual install folders (`~/.local/bin`, `~/.claude/local`, `/opt/homebrew/bin`, `/usr/local/bin`, npm, Volta, Bun).",
+            "scope": "machine"
+          },
+          "commitharbor.ai.cli.codexPath": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Path to the OpenAI Codex CLI executable (`codex`). Empty: looked for on the `PATH` and in the usual install folders (`/opt/homebrew/bin`, `/usr/local/bin`, npm, Volta, Bun).",
+            "scope": "machine"
+          },
+          "commitharbor.ai.cli.geminiPath": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Path to the Gemini CLI executable (`gemini`). Empty: looked for on the `PATH` and in the usual install folders (`/opt/homebrew/bin`, `/usr/local/bin`, npm, Volta, Bun).",
+            "scope": "machine"
+          },
+          "commitharbor.ai.cli.timeout": {
+            "type": "number",
+            "default": 120,
+            "minimum": 10,
+            "maximum": 900,
+            "markdownDescription": "Seconds an AI command line tool may take to answer one request of the AI actions before Commit Harbor stops it."
+          },
+          "commitharbor.ai.commitMessage.conventionalCommits": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Make **Generate Commit Message with AI** and **Improve Commit Message with AI** write [Conventional Commits](https://www.conventionalcommits.org) messages: a first line like `feat(parser): support arrays` (`type(scope): description`, with `!` and a `BREAKING CHANGE:` footer for breaking changes)."
+          },
+          "commitharbor.mcp.enabled": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Expose a read-only [MCP](https://modelcontextprotocol.io) server with the repository's status, history, diffs, branches, blame, conflicts, stashes, shelves, worktrees and reflog to AI agents in VS Code (Copilot's agent mode lists it as **Commit Harbor**). It runs locally and never changes the repository; secret values are redacted. Nothing leaves the machine except what the agent itself sends to its model. Other agents (Claude Code, Cursor, Codex CLI, Gemini CLI…) start their own copy: set them up in the **MCP** tab of the Git tool window ([Commit Harbor: AI Agents (MCP)…](command:commitharbor.mcp.show))."
+          },
+          "commitharbor.gitflow.statusBar": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the Git Flow item in the status bar (its popup starts and finishes features, releases and hotfixes) in repositories initialized for git-flow, like the Gitflow widget of the Git Flow Integration plugin."
+          }
+        }
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "commitharbor.hunk.toggle",
+        "key": "ctrl+alt+shift+i",
+        "mac": "cmd+alt+shift+i",
+        "when": "editorTextFocus && commitharbor.hasRepositories"
+      },
+      {
+        "command": "commitharbor.addToVcs",
+        "key": "ctrl+alt+a",
+        "mac": "cmd+alt+a",
+        "when": "commitharbor.hasRepositories && (editorTextFocus || filesExplorerFocus)"
+      },
+      {
+        "command": "commitharbor.branches.popup",
+        "key": "ctrl+shift+`",
+        "mac": "cmd+shift+`",
+        "when": "commitharbor.hasRepositories"
+      },
+      {
+        "command": "commitharbor.vcsOperations",
+        "key": "alt+`",
+        "mac": "ctrl+v",
+        "when": "commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.push.dialog",
+        "key": "ctrl+shift+k",
+        "mac": "cmd+shift+k",
+        "when": "commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.updateProject",
+        "key": "ctrl+t",
+        "mac": "cmd+t",
+        "when": "commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.showCommit",
+        "key": "ctrl+k",
+        "mac": "cmd+k",
+        "when": "commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.showCommit",
+        "key": "alt+0",
+        "when": "commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.rollback",
+        "key": "ctrl+alt+z",
+        "when": "commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.log.show",
+        "key": "alt+9",
+        "mac": "cmd+9",
+        "when": "commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.gutter.showPopup",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d",
+        "when": "commitharbor.hasRepositories && editorTextFocus && config.commitharbor.keymap != jetbrains"
+      },
+      {
+        "command": "commitharbor.gutter.previousChange",
+        "key": "ctrl+alt+shift+up",
+        "mac": "ctrl+alt+shift+up",
+        "when": "editorTextFocus && commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "commitharbor.gutter.nextChange",
+        "key": "ctrl+alt+shift+down",
+        "mac": "ctrl+alt+shift+down",
+        "when": "editorTextFocus && commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      }
+    ],
+    "colors": [
+      {
+        "id": "commitharbor.addedInactiveResourceForeground",
+        "description": "Files added in an inactive changelist",
+        "defaults": {
+          "dark": "#7fb56f",
+          "light": "#4a8b2a",
+          "highContrast": "#7fb56f",
+          "highContrastLight": "#4a8b2a"
+        }
+      },
+      {
+        "id": "commitharbor.modifiedInactiveResourceForeground",
+        "description": "Files modified in an inactive changelist",
+        "defaults": {
+          "dark": "#a8a8a8",
+          "light": "#6b6b6b",
+          "highContrast": "#a8a8a8",
+          "highContrastLight": "#6b6b6b"
+        }
+      },
+      {
+        "id": "commitharbor.changelistConflictResourceForeground",
+        "description": "Files with a changelist conflict",
+        "defaults": {
+          "dark": "#f28b82",
+          "light": "#c62828",
+          "highContrast": "#f28b82",
+          "highContrastLight": "#c62828"
+        }
+      },
+      {
+        "id": "commitharbor.deletedFromFsResourceForeground",
+        "description": "Tracked files deleted from the file system",
+        "defaults": {
+          "dark": "#c74e39",
+          "light": "#ad0707",
+          "highContrast": "#c74e39",
+          "highContrastLight": "#ad0707"
+        }
+      },
+      {
+        "id": "commitharbor.copiedResourceForeground",
+        "description": "Copied files",
+        "defaults": {
+          "dark": "#73c991",
+          "light": "#007100",
+          "highContrast": "#73c991",
+          "highContrastLight": "#007100"
+        }
+      },
+      {
+        "id": "commitharbor.mergedResourceForeground",
+        "description": "Merged files",
+        "defaults": {
+          "dark": "#b180d7",
+          "light": "#652d90",
+          "highContrast": "#b180d7",
+          "highContrastLight": "#652d90"
+        }
+      },
+      {
+        "id": "commitharbor.changedDescendantsResourceForeground",
+        "description": "Directories with modified descendants",
+        "defaults": {
+          "dark": "#c5c5c5",
+          "light": "#5a5a5a",
+          "highContrast": "#c5c5c5",
+          "highContrastLight": "#5a5a5a"
+        }
+      },
+      {
+        "id": "commitharbor.recentlyChangedResourceForeground",
+        "description": "Files changed in the last N days",
+        "defaults": {
+          "dark": "#9cdcfe",
+          "light": "#0451a5",
+          "highContrast": "#9cdcfe",
+          "highContrastLight": "#0451a5"
+        }
+      }
+    ],
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "commitharbor",
+        "label": "Commit Harbor"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "check": "node scripts/check.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "vscode:prepublish": "npm run build && npm run check && npm test",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "4.1.1"
+  },
+  "commitHarborBuild": {
+    "notice": "Modified downstream distribution of Git Jet 0.27.4; original TypeScript sources are not included or available. See UPSTREAM.md and NOTICE.",
+    "upstreamVersion": "0.27.4",
+    "upstreamSha256": "48208d8b1f80d4555683f7e412e39d01f17b2d6cb14015f5001023e00abc56e9"
+  }
+}
