@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Add real Commit view and history screenshots using a fictional demo repository.
+- Document the resizable commit message pane and history interface.
+
 ## 0.1.0
 
 - Initial independent distribution based on the official Git Jet 0.27.4 VSIX.

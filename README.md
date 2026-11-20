@@ -19,6 +19,22 @@ Downstream changes:
 
 The original upstream feature set is inherited, not independently reimplemented. This is an early downstream release; regression tests focus on the modifications and distribution integrity, not every upstream Git operation.
 
+## Screenshots
+
+Real captures from an isolated VS Code profile using a fictional **Harbor Library** repository. All example code, commits and author details were created for this demonstration.
+
+### Commit view and diff
+
+Review changed and unversioned files, inspect a side-by-side diff and write a commit message in a resizable pane. Commit Harbor remembers the selected message pane height when the view is recreated.
+
+![Commit Harbor commit view with a resized message pane and a side-by-side code diff](docs/screenshots/commit-panel.png)
+
+### Commit history
+
+Browse the commit graph, inspect changed files and view the selected commit's details.
+
+![Commit Harbor history with a selected commit, changed files and author details](docs/screenshots/history.png)
+
 ## Install and migrate
 
 Install **Commit Harbor** by **Toximiner**, or install the VSIX from [GitHub Releases](https://github.com/Toximiner/commit-harbor/releases).
