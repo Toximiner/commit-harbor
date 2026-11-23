@@ -13,6 +13,8 @@ Inherited from the pinned upstream distribution: the commit tool window, changel
 Downstream changes:
 
 - Save and restore commit message pane height using VS Code's webview state API.
+- Remember checked and previously seen files in the Commit view across window reloads.
+- Remember open files per Git branch. On switching branches, clean tabs for that repository are replaced with the target branch's remembered files; tabs with unsaved changes stay open. Disable `commitharbor.branches.restoreWorkspace` to turn this off.
 - Preserve unrelated webview state and keep a usable minimum input height.
 - Use a separate extension ID, `commitharbor.*` commands, views and settings.
 - New extension branding and icon, with upstream attribution retained.
@@ -55,7 +57,7 @@ npm test
 npm run package
 ```
 
-The build verifies the pinned upstream VSIX checksum, extracts runtime assets, applies namespace/branding changes and the readable patch in `patches/commit-height.cjs`, then creates the installable package. The build fails if the expected patch targets have changed. Generated `dist/` and `media/` directories are not committed.
+The build verifies the pinned upstream VSIX checksum, extracts runtime assets, applies namespace/branding changes and readable patches in `patches/`, then creates the installable package. The build fails if the expected patch targets have changed. Generated `dist/` and `media/` directories are not committed.
 
 ## VS Code smoke test
 

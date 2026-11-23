@@ -33,13 +33,18 @@ with zipfile.ZipFile(ARCHIVE) as archive:
         destination.write_bytes(data)
     for name in ["package.nls.json", "package.nls.es.json"]:
         value = json.loads(archive.read("extension/" + name))
-        value["description"] = "Independent Git workbench distribution based on Git Jet 0.27.4, with persistent commit message pane height."
+        value["description"] = "Independent Git workbench based on Git Jet 0.27.4, with persistent commit pane height and branch-aware editor state."
         value["commitHarbor.modifications"] = "Modified downstream distribution; see NOTICE and UPSTREAM.md."
         (ROOT / name).write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 commit = ROOT / "dist/webview/chunks/commit-Bw38ouX0.js"
 subprocess.run(["node", str(ROOT / "patches/commit-height.cjs"), str(commit)], check=True)
+subprocess.run(["node", str(ROOT / "patches/commit-checks.cjs"), str(commit)], check=True)
 text = commit.read_text()
 if not text.startswith(NOTICE): commit.write_text(NOTICE + text)
+extension = ROOT / "dist/extension.js"
+subprocess.run(["node", str(ROOT / "patches/branch-workspace.cjs"), str(extension)], check=True)
+text = extension.read_text()
+if not text.startswith(NOTICE): extension.write_text(NOTICE + text)
 activity = ROOT / "media/icons/commitharbor.svg"
 activity.write_bytes((ROOT / "assets/activity.svg").read_bytes())
 print("Built Commit Harbor from verified Git Jet " + PIN["version"] + " distribution.")

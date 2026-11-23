@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+- Remember open editor files separately for each Git branch and restore them when switching branches.
+- Preserve checked, unchecked and previously seen files in the Commit view across webview reloads.
+- Document branch-aware workspace restoration and its setting.
+
 ## 0.1.1
 
 - Add real Commit view and history screenshots using a fictional demo repository.
