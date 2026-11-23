@@ -14,6 +14,7 @@ Downstream changes:
 
 - Save and restore commit message pane height using VS Code's webview state API.
 - Remember checked and previously seen files in the Commit view across window reloads.
+- Leave newly detected modified files unchecked until you select them.
 - Remember open files per Git branch. On switching branches, clean tabs for that repository are replaced with the target branch's remembered files; tabs with unsaved changes stay open. Disable `commitharbor.branches.restoreWorkspace` to turn this off.
 - Preserve unrelated webview state and keep a usable minimum input height.
 - Use a separate extension ID, `commitharbor.*` commands, views and settings.

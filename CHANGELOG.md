@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- Leave newly detected modified files unchecked in the Commit view.
+- Keep restored file selections while Git refreshes the change list.
+
 ## 0.1.3
 
 - Remember open editor files separately for each Git branch and restore them when switching branches.

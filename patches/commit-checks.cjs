@@ -8,6 +8,8 @@ function apply(source) {
     }
     replaceOnce('setRepositories(n){let r={...t().ui};',
         'restoreChecks(n){if(!n)return;let r={...t().ui};for(let[root,saved]of Object.entries(n)){let current=r[root]??J();r[root]={...current,checked:new Set(saved.checked??[]),seen:new Set(saved.seen??[]),checkedUnversioned:new Set(saved.checkedUnversioned??[])}}e({ui:r})},setRepositories(n){let r={...t().ui};');
+    replaceOnce('for(let t of e.changes)i.has(t.path)||(n.add(t.path),i.add(t.path));',
+        'for(let t of e.changes)i.add(t.path);');
     replaceOnce('case`init`:t.setPreferences(e.preferences),t.setRepositories(e.repositories);break;case`repositories`:t.setRepositories(e.repositories);break;',
         'case`init`:t.setPreferences(e.preferences),t.restoreChecks(__commitHarborTransport.getState?.()?.commitHarborCheckedFiles),t.setRepositories(e.repositories);break;case`repositories`:t.restoreChecks(__commitHarborTransport.getState?.()?.commitHarborCheckedFiles),t.setRepositories(e.repositories);break;');
     replaceOnce('(0,k.useEffect)(()=>{let n=t(e=>{let t=i.getState();switch(e.type)',
