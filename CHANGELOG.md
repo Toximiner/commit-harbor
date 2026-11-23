@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Remember expanded and collapsed groups in the Commit view tree across window reloads.
+
 ## 0.1.4
 
 - Leave newly detected modified files unchecked in the Commit view.
