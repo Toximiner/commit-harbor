@@ -17,6 +17,7 @@ Downstream changes:
 - Leave newly detected modified files unchecked until you select them.
 - Remember expanded and collapsed groups in the Commit view tree across window reloads.
 - Remember open files per Git branch. On switching branches, clean tabs for that repository are replaced with the target branch's remembered files; tabs with unsaved changes stay open. Disable `commitharbor.branches.restoreWorkspace` to turn this off.
+- Keep hunk include/exclude checkmarks out of the editor gutter by default. To show them, enable **Commit Harbor › Editor: Show Hunk Inclusion Gutter** (`commitharbor.editor.showHunkInclusionGutter`) in VS Code Settings; hunk inclusion controls remain available in the Commit view either way.
 - Preserve unrelated webview state and keep a usable minimum input height.
 - Use a separate extension ID, `commitharbor.*` commands, views and settings.
 - New extension branding and icon, with upstream attribution retained.

@@ -43,6 +43,7 @@ text = commit.read_text()
 if not text.startswith(NOTICE): commit.write_text(NOTICE + text)
 extension = ROOT / "dist/extension.js"
 subprocess.run(["node", str(ROOT / "patches/branch-workspace.cjs"), str(extension)], check=True)
+subprocess.run(["node", str(ROOT / "patches/hunk-gutter.cjs"), str(extension)], check=True)
 text = extension.read_text()
 if not text.startswith(NOTICE): extension.write_text(NOTICE + text)
 activity = ROOT / "media/icons/commitharbor.svg"
