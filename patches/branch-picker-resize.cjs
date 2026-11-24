@@ -36,11 +36,18 @@ function commitHarborBranchPickerResize() {
         const grip = document.createElement('div');
         grip.id = 'commitHarborBranchPickerGrip';
         grip.setAttribute('aria-hidden', 'true');
-        grip.style.cssText = 'position:absolute;right:' + GAP + 'px;bottom:' + GAP + 'px;width:' + HANDLE + 'px;height:' + HANDLE + 'px;cursor:nwse-resize;z-index:50;opacity:.55;';
+        grip.style.cssText = 'position:absolute;right:' + GAP + 'px;bottom:' + GAP + 'px;width:' + HANDLE + 'px;height:' + HANDLE + 'px;cursor:nwse-resize;z-index:50;';
         grip.title = 'Drag to resize, double-click to reset';
-        const triangle = document.createElement('div');
-        triangle.style.cssText = 'position:absolute;right:2px;bottom:2px;width:0;height:0;border-right:7px solid currentColor;border-bottom:7px solid transparent;';
-        grip.appendChild(triangle);
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '10');
+        svg.setAttribute('height', '10');
+        svg.setAttribute('viewBox', '0 0 10 10');
+        svg.style.cssText = 'position:absolute;right:2px;bottom:2px;opacity:.6;';
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M10 0 L10 10 L0 10 Z');
+        path.setAttribute('fill', 'currentColor');
+        svg.appendChild(path);
+        grip.appendChild(svg);
         return grip;
     };
     const attach = panel => {
