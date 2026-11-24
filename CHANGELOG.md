@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.8
+
+- New 512x512 marketplace icon: a git branch grown into a sailboat mast.
+- README: the introduction now describes the full downstream feature set (pane height, selection and branch memory, built-in remote deployment) instead of only the pane-height fix.
+- Fix: restoring the per-branch editor state no longer collapses editor groups at window startup (git's initial load is no longer treated as a branch switch), and a real switch now keeps already open remembered files in their groups, closing only files the target branch does not remember.
+
 ## 0.1.7
 
 - Built-in remote deployment over SFTP, FTP, FTPS and WebDAV (vendored Remote Deployment 1.1.1).
