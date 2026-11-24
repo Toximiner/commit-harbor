@@ -10,6 +10,7 @@ import { Excluder, localForRemote, remoteForLocal, webUrlForLocal } from '../src
 import { Project } from '../src/core/project';
 import { RevisionTracker } from '../src/core/revisions';
 import { Deployer } from '../src/core/transfer';
+import { checkedFileUris } from '../src/commands/local';
 import { parseFtpTime } from '../src/transport/ftp';
 import { ConnectionPool } from '../src/transport/pool';
 
@@ -62,6 +63,20 @@ async function main() {
   await test('ftp time parsing', () => {
     assert.equal(parseFtpTime('20260102030405'), Date.UTC(2026, 0, 2, 3, 4, 5));
     assert.equal(parseFtpTime('20260102030405.123'), Date.UTC(2026, 0, 2, 3, 4, 5, 123));
+  });
+  await test('commit window bridge: checked file uris', () => {
+    const root = path.join(TMP, 'bridge');
+    write(path.join(root, 'a.py'), 'x');
+    write(path.join(root, 'sub', 'b.py'), 'y');
+    const uris = checkedFileUris([
+      { root, paths: ['a.py', 'sub/b.py', 'missing.py', 42] },
+      { root: 'not-a-string' },
+      null,
+      { root, paths: ['a.py', path.join(root, 'sub', 'b.py')] },
+    ]);
+    assert.deepEqual(uris.map((u) => u.fsPath).sort(), [path.join(root, 'a.py'), path.join(root, 'sub', 'b.py')].sort());
+    assert.deepEqual(checkedFileUris(undefined), []);
+    assert.deepEqual(checkedFileUris([{ root }]), []);
   });
   await test('idea import', () => {
     const dir = path.join(TMP, 'idea'); fs.mkdirSync(path.join(dir, '.idea'), { recursive: true });

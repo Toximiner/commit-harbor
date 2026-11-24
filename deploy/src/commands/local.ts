@@ -36,7 +36,7 @@ function fileUris(args: unknown[]): vscode.Uri[] {
 }
 
 /** The commit webview posts [{ root, paths }] with paths relative to the repository root. */
-function checkedFileUris(groups: unknown): vscode.Uri[] {
+export function checkedFileUris(groups: unknown): vscode.Uri[] {
   const uris: vscode.Uri[] = [];
   const seen = new Set<string>();
   if (!Array.isArray(groups)) {
