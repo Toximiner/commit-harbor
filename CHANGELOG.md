@@ -1,8 +1,11 @@
 # Changelog
 
-## 0.1.11
+## 0.1.12
 
-- Fix: committing selected files runs hooks against an isolated index, so hooks such as `pre-commit` no longer collide with `git commit --only`; unrelated staged changes remain untouched.
+- Fix: committing selected files runs hooks against an isolated index, so hooks such as `pre-commit` no longer collide with the repository index; unrelated staged changes remain untouched.
+- Fix: preserve commit messages that begin with `#` (for example, ticket IDs) instead of stripping the whole message as a comment.
+
+## 0.1.11
 
 ## 0.1.10
 

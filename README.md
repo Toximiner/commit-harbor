@@ -17,7 +17,7 @@ Downstream changes:
 - Remember checked and previously seen files in the Commit view across window reloads.
 - Leave newly detected modified files unchecked until you select them.
 - Remember expanded and collapsed groups in the Commit view tree across window reloads.
-- Commit selected files through an isolated Git index so hooks such as `pre-commit` can run without colliding with the repository index; unrelated staged changes stay staged.
+- Commit selected files through an isolated Git index so hooks such as `pre-commit` can run without colliding with the repository index; unrelated staged changes stay staged, and `#` ticket prefixes are preserved in commit messages.
 - Built-in remote deployment over SFTP, FTP, FTPS and WebDAV: configure servers in `.vscode/deployment.json`, then upload, download, compare and sync from the **Remote Host** view or the **Upload to Default Server** context-menu item in the Commit pane and the file tree.
 - Remember open files per Git branch. On switching branches, clean tabs for that repository are replaced with the target branch's remembered files; tabs with unsaved changes stay open. Disable `commitharbor.branches.restoreWorkspace` to turn this off.
 - Keep hunk include/exclude checkmarks out of the editor gutter by default. To show them, enable **Commit Harbor › Editor: Show Hunk Inclusion Gutter** (`commitharbor.editor.showHunkInclusionGutter`) in VS Code Settings; hunk inclusion controls remain available in the Commit view either way.

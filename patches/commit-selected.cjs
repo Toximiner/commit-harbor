@@ -25,16 +25,20 @@ function apply(source) {
         ''
     );
     replaceOnce(
+        'let a=["commit","-F",o,"--cleanup=strip"];',
+        'let a=["commit","-F",o,"--cleanup=whitespace"];'
+    );
+    replaceOnce(
         ',t.info?.state==="MERGING"&&n.size>0?await t.git.exec(["add","-A","--",...n],{cwd:t.root}):n.size>0&&a.push("--only","--",...n),await t$(t,a,"Nada que commitear: los archivos seleccionados no tienen cambios.")',
         ';if(t.info?.state==="MERGING"&&n.size>0){await t.git.exec(["add","-A","--",...n],{cwd:t.root});await t$(t,a,"Nada que commitear: los archivos seleccionados no tienen cambios.")}else if(n.size>0){let c=await Rp.promises.mkdtemp(Uc.join((0,_O.tmpdir)(),"commitharbor-index-")),u=Uc.join(c,"index"),d={GIT_INDEX_FILE:u};try{await t.git.exec(["read-tree","HEAD"],{cwd:t.root,env:d});await t.git.exec(["add","-A","--",...n],{cwd:t.root,env:d});await t$(t,a,"Nada que commitear: los archivos seleccionados no tienen cambios.",d);await t.git.exec(["reset","-q","HEAD","--",...n],{cwd:t.root})}finally{await Rp.promises.rm(c,{recursive:!0,force:!0})}}else await t$(t,a,"Nada que commitear: los archivos seleccionados no tienen cambios.")'
     );
     source = source.replace(
         'await t.git.exec(["read-tree","HEAD"],{cwd:t.root,env:d});',
-        'await t.git.exec(t.info?.hasHead?["read-tree","HEAD"]:["read-tree","--empty"],{cwd:t.root,env:d});'
+        'await t.git.exec(t.info?.currentRevision!==void 0?["read-tree","HEAD"]:["read-tree","--empty"],{cwd:t.root,env:d});'
     );
     source = source.replace(
         'await t.git.exec(["reset","-q","HEAD","--",...n],{cwd:t.root})',
-        't.info?.hasHead&&await t.git.exec(["reset","-q","HEAD","--",...n],{cwd:t.root})'
+        't.info?.currentRevision!==void 0&&await t.git.exec(["reset","-q","HEAD","--",...n],{cwd:t.root})'
     );
     return source;
 }
