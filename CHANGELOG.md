@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9
+
+- README: the header icon is now rendered at a fixed 96px instead of full column width (republished because the 0.1.8 Marketplace version already existed and could not be replaced).
+
 ## 0.1.8
 
 - New 512x512 marketplace icon: a git branch grown into a sailboat mast.
