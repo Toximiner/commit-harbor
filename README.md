@@ -1,6 +1,6 @@
 # Commit Harbor
 
-![Commit Harbor icon](assets/icon.png)
+<img src="assets/icon.png" alt="Commit Harbor icon" width="96" />
 
 An independent Git workbench distribution for VS Code, based on **Git Jet 0.27.4** by Santiago Bárcenas and contributors.
 
