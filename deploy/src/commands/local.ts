@@ -35,6 +35,34 @@ function fileUris(args: unknown[]): vscode.Uri[] {
   return resolveLocals(args).filter((u) => u.scheme === 'file');
 }
 
+/** The commit webview posts [{ root, paths }] with paths relative to the repository root. */
+function checkedFileUris(groups: unknown): vscode.Uri[] {
+  const uris: vscode.Uri[] = [];
+  const seen = new Set<string>();
+  if (!Array.isArray(groups)) {
+    return uris;
+  }
+  for (const group of groups) {
+    const g = group as { root?: unknown; paths?: unknown } | null;
+    if (!g || typeof g !== 'object' || typeof g.root !== 'string') {
+      continue;
+    }
+    const paths = Array.isArray(g.paths) ? g.paths : [];
+    for (const value of paths) {
+      if (typeof value !== 'string' || !value) {
+        continue;
+      }
+      const abs = path.isAbsolute(value) ? value : path.join(g.root, value);
+      if (seen.has(abs) || !fs.existsSync(abs)) {
+        continue;
+      }
+      seen.add(abs);
+      uris.push(vscode.Uri.file(abs));
+    }
+  }
+  return uris;
+}
+
 function projectFor(s: Services, uris: vscode.Uri[]): Project | undefined {
   const p = s.projects.forUri(uris[0]);
   if (!p) {
@@ -400,6 +428,21 @@ export function registerLocalCommands(s: Services): vscode.Disposable[] {
       }
     }),
     reg('deploy.disconnectAll', () => s.pool.disconnect()),
+    /** Bridge for the commit window 'Deploy' button; not exposed to the command palette. */
+    reg('commitharbor.deployUpload', async (groups: unknown) => {
+      const uris = checkedFileUris(groups);
+      if (!uris.length) {
+        void vscode.window.showInformationMessage('Commit Harbor: no checked files to upload.');
+        return;
+      }
+      const project = projectFor(s, uris);
+      const targets = project ? await defaultTargets(project) : undefined;
+      if (project && targets) {
+        await saveDirty(uris);
+        await deployer.upload(project, targets, uris.map((u) => u.fsPath), { title: 'Upload checked files' });
+        s.host.refresh();
+      }
+    }),
   ];
 }
 
