@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10
+
+- Fix: a typed commit message now survives switching the sidebar to another view (for example File Explorer) and back — the Commit tool window keeps its webview context while hidden, matching the Git log and Pull Requests windows.
+
 ## 0.1.9
 
 - README: the header icon is now rendered at a fixed 96px instead of full column width (republished because the 0.1.8 Marketplace version already existed and could not be replaced).

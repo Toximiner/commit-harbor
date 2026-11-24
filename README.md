@@ -13,6 +13,7 @@ Inherited from the pinned upstream distribution: the commit tool window, changel
 Downstream changes:
 
 - Save and restore commit message pane height using VS Code's webview state API.
+- Keep a typed commit message while the Commit view is hidden: the webview context survives switching to another sidebar view, matching the Git log and Pull Requests windows.
 - Remember checked and previously seen files in the Commit view across window reloads.
 - Leave newly detected modified files unchecked until you select them.
 - Remember expanded and collapsed groups in the Commit view tree across window reloads.
