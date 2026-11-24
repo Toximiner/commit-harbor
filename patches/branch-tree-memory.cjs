@@ -32,7 +32,13 @@ function apply(source) {
     replaceOnce(
         'D=e=>(E?d:l)(t=>{let n=new Set(t);return n.has(e)?n.delete(e):n.add(e),n})',
         'D=e=>(E?d:l)(t=>{let n=new Set(t);if(n.has(e))n.delete(e);else n.add(e);if(!E)commitHarborBranchTreePersist(e.title,n);return n})');
-    return commitHarborBranchTreeSaved.toString() + '\n' + commitHarborBranchTreePersist.toString() + '\n' + source;
+    const preamble = commitHarborBranchTreeSaved.toString() + '\n' + commitHarborBranchTreePersist.toString() + '\n';
+    const notice = '/*! Commit Harbor downstream modifications';
+    if (source.startsWith(notice)) {
+        const end = source.indexOf('*/', notice.length);
+        return source.slice(0, end + 2) + '\n' + preamble + source.slice(end + 2);
+    }
+    return preamble + source;
 }
 module.exports = { commitHarborBranchTreeSaved, commitHarborBranchTreePersist, apply };
 if (require.main === module) {

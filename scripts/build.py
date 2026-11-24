@@ -44,9 +44,9 @@ subprocess.run(["node", str(ROOT / "patches/commit-deploy.cjs"), str(commit)], c
 text = commit.read_text()
 if not text.startswith(NOTICE): commit.write_text(NOTICE + text)
 ui = ROOT / "dist/webview/chunks/ui-BbbfItdn.js"
+# The extraction already prepends NOTICE to renamed chunks; branch-tree-memory inserts its
+# helpers after the NOTICE, so do not prepend a second one here.
 subprocess.run(["node", str(ROOT / "patches/branch-tree-memory.cjs"), str(ui)], check=True)
-text = ui.read_text()
-if not text.startswith(NOTICE): ui.write_text(NOTICE + text)
 extension = ROOT / "dist/extension.js"
 subprocess.run(["node", str(ROOT / "patches/branch-workspace.cjs"), str(extension)], check=True)
 subprocess.run(["node", str(ROOT / "patches/hunk-gutter.cjs"), str(extension)], check=True)
