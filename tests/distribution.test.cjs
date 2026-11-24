@@ -12,8 +12,9 @@ test('build includes Commit view state patches and cannot silently patch another
   const {apply:applyDeploy}=require('../patches/commit-deploy.cjs');assert.throws(()=>applyDeploy('unrelated version'),/commit-height-patched/);
   const {apply:applyDeployMenu}=require('../patches/commit-deploy-menu.cjs');assert.throws(()=>applyDeployMenu('unrelated version'),/patch target changed/);
   const {apply:applyTree}=require('../patches/branch-tree-memory.cjs');assert.throws(()=>applyTree('unrelated version'),/patch target changed/);
+  const {apply:applyRetain}=require('../patches/commit-retain.cjs');assert.throws(()=>applyRetain('unrelated version'),/patch target changed/);
   const ui=fs.readFileSync(path.join(root,'dist/webview/chunks/ui-BbbfItdn.js'),'utf8');assert.ok(ui.includes('commitHarborBranchTreeSaved'));assert.ok(ui.includes('commitHarborBranchTreePersist'));
- const extension=fs.readFileSync(path.join(root,'dist/extension.js'),'utf8');assert.ok(extension.includes('installBranchWorkspaceRestore'));assert.ok(extension.includes('commitHarbor.branchEditors.v1'));
+ const extension=fs.readFileSync(path.join(root,'dist/extension.js'),'utf8');assert.ok(extension.includes('installBranchWorkspaceRestore'));assert.ok(extension.includes('commitHarbor.branchEditors.v1'));assert.ok(extension.includes('registerToolWindow("commit",this,{page:{entry:"commit",title:"Commit"},retainContext:!0}'));
 });
 test('upstream copyright and third-party notices remain available',()=>{
  const notice=fs.readFileSync(path.join(root,'NOTICE'),'utf8');assert.ok(notice.includes('Santiago Bárcenas'));assert.ok(notice.includes('JetBrains'));assert.ok(notice.includes('Commit Harbor downstream'));
