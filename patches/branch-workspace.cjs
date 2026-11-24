@@ -11,13 +11,13 @@ function installBranchWorkspaceRestore(context, vscode) {
     const switchingRoots = new Set();
     const disposables = [];
     const tabs = () => vscode.window.tabGroups.all.flatMap(group => group.tabs);
+    const tabUri = tab => tab.input?.uri ?? tab.input?.modified ?? tab.input?.original;
     const filesInRepo = (repo, openTabs) => {
         const path = require('node:path');
         const root = repo.rootUri.fsPath;
         const prefix = root.endsWith(path.sep) ? root : root + path.sep;
         return openTabs.map(tab => {
-            const input = tab.input;
-            const uri = input?.uri ?? input?.modified ?? input?.original;
+            const uri = tabUri(tab);
             if (!uri || uri.scheme !== 'file') return undefined;
             const file = uri.fsPath;
             return file === root || file.startsWith(prefix) ? uri.toString() : undefined;
@@ -43,17 +43,23 @@ function installBranchWorkspaceRestore(context, vscode) {
     const restore = async (repo, branch) => {
         if (!config() || !branch) return;
         const root = repo.rootUri.toString();
-        const files = snapshots[root]?.[branch] ?? [];
-        const staleTabs = tabs().filter(tab => {
-            if (tab.isDirty) return false;
-            const uri = tab.input?.uri ?? tab.input?.modified ?? tab.input?.original;
-            if (!uri || uri.scheme !== 'file') return false;
-            const path = require('node:path');
-            const repoPath = repo.rootUri.fsPath;
-            return uri.fsPath === repoPath || uri.fsPath.startsWith(repoPath.endsWith(path.sep) ? repoPath : repoPath + path.sep);
+        const files = new Set(snapshots[root]?.[branch] ?? []);
+        const path = require('node:path');
+        const repoPath = repo.rootUri.fsPath;
+        const repoPrefix = repoPath.endsWith(path.sep) ? repoPath : repoPath + path.sep;
+        const inRepo = file => file === repoPath || file.startsWith(repoPrefix);
+        const current = tabs().map(tab => {
+            const uri = tabUri(tab);
+            return { tab, uri, inRepo: !!(uri && uri.scheme === 'file' && inRepo(uri.fsPath)) };
         });
+        // Close only the clean tabs the selected branch does not remember; files it does
+        // remember keep their current editor group instead of being closed and reopened
+        // in the active group.
+        const staleTabs = current.filter(e => e.inRepo && !e.tab.isDirty && !files.has(e.uri.toString())).map(e => e.tab);
         if (staleTabs.length) await vscode.window.tabGroups.close(staleTabs, true).catch(() => false);
+        const openUris = new Set(current.filter(e => e.uri && e.uri.scheme === 'file').map(e => e.uri.toString()));
         for (const value of files) {
+            if (openUris.has(value)) continue;
             try {
                 const uri = vscode.Uri.parse(value);
                 await vscode.workspace.openTextDocument(uri);
@@ -70,6 +76,10 @@ function installBranchWorkspaceRestore(context, vscode) {
             const previous = previousBranches.get(root);
             if (next === previous) { save(); return; }
             previousBranches.set(root, next);
+            // The first observation of a resolved HEAD is git's initial load at window
+            // startup, not a branch switch: record it (and refresh the snapshot) without
+            // touching the restored editor layout.
+            if (previous === undefined) { save(); return; }
             if (!next) return;
             switchingRoots.add(root);
             const oldTimer = pending.get(root);

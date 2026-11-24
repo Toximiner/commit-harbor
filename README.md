@@ -4,7 +4,7 @@
 
 An independent Git workbench distribution for VS Code, based on **Git Jet 0.27.4** by Santiago Bárcenas and contributors.
 
-Commit Harbor preserves the upstream Git UI and fixes a small but disruptive behavior: **the commit message pane now remembers the height you choose** when the webview is hidden and recreated.
+Commit Harbor preserves the upstream Git UI and adds downstream improvements: **the commit message pane remembers the height you choose**, the commit view remembers your checked and expanded files across window reloads, open editors are restored per Git branch, and remote deployment over SFTP, FTP, FTPS and WebDAV is built in.
 
 ## Features
 
@@ -44,6 +44,18 @@ Review changed and unversioned files, inspect a side-by-side diff and write a co
 Browse the commit graph, inspect changed files and view the selected commit's details.
 
 ![Commit Harbor history with a selected commit, changed files and author details](docs/screenshots/history.png)
+
+### Remote Host view
+
+The Remote Host view lists the servers from `.vscode/deployment.json`. The starred server is the default upload target; expand a server to manage its mappings and files.
+
+![Commit Harbor Remote Host view listing a configured SFTP server](docs/screenshots/deploy-remote-host.png)
+
+### Upload from the Commit pane
+
+Right-click a changed file in the Commit view and choose **Upload to Default Server** to send it to the default server from the current mapping.
+
+![Commit view context menu with the Upload to Default Server action](docs/screenshots/deploy-context-menu.png)
 
 ## Install and migrate
 
