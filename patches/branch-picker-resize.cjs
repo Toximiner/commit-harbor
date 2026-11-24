@@ -20,6 +20,13 @@ function commitHarborBranchPickerResize() {
     const writeSaved = size => {
         try { localStorage.setItem(KEY, JSON.stringify(size)); } catch { /* Storage may be unavailable. */ }
     };
+    const clampToContainer = panel => {
+        const rect = panel.getBoundingClientRect();
+        const maxW = Math.max(MIN_W, document.documentElement.clientWidth - rect.left - 4);
+        const maxH = Math.max(MIN_H, document.documentElement.clientHeight - rect.top - 4);
+        if (panel.offsetWidth > maxW) panel.style.width = maxW + 'px';
+        if (panel.offsetHeight > maxH) panel.style.height = maxH + 'px';
+    };
     const findPanel = titleEl => {
         let el = titleEl, fallback = null;
         for (let level = 0; level < 16 && el && el.parentElement; level++) {
@@ -59,6 +66,7 @@ function commitHarborBranchPickerResize() {
         panel.appendChild(state.grip);
         const saved = readSaved();
         if (saved) { panel.style.width = saved.w + 'px'; panel.style.height = saved.h + 'px'; }
+        clampToContainer(panel);
     };
     state.grip = makeGrip();
     state.grip.addEventListener('mousedown', event => {
@@ -78,13 +86,14 @@ function commitHarborBranchPickerResize() {
         if (!state.panel) return;
         state.panel.style.width = '';
         state.panel.style.height = '';
+        clampToContainer(state.panel);
         try { localStorage.removeItem(KEY); } catch { /* Storage may be unavailable. */ }
     });
     document.addEventListener('mousemove', event => {
         if (!state.dragging || !state.panel) return;
         const rect = state.panel.getBoundingClientRect();
-        const maxW = Math.max(MIN_W, window.innerWidth - rect.left - GAP);
-        const maxH = Math.max(MIN_H, window.innerHeight - rect.top - GAP);
+        const maxW = Math.max(MIN_W, document.documentElement.clientWidth - rect.left - GAP);
+        const maxH = Math.max(MIN_H, document.documentElement.clientHeight - rect.top - GAP);
         const width = Math.min(maxW, Math.max(MIN_W, state.startW + event.clientX - state.startX));
         const height = Math.min(maxH, Math.max(MIN_H, state.startH + event.clientY - state.startY));
         state.panel.style.width = width + 'px';
@@ -130,6 +139,9 @@ function commitHarborBranchPickerResize() {
     const start = () => {
         if (!document.body) return;
         new MutationObserver(onMutations).observe(document.body, { childList: true, subtree: true });
+        window.addEventListener('resize', () => {
+            if (state.panel && state.panel.isConnected) clampToContainer(state.panel);
+        });
         schedule();
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
