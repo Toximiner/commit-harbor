@@ -7,7 +7,8 @@ test('entrypoints, contribution commands and webview imports exist',()=>{
 });
 test('build includes Commit view state patches and cannot silently patch another upstream version',()=>{
  const {apply}=require('../patches/commit-height.cjs');assert.throws(()=>apply('unrelated version'),/patch target changed/);
- const text=fs.readFileSync(path.join(root,'dist/webview/chunks/commit-Bw38ouX0.js'),'utf8');assert.ok(text.includes('commitHarborMessageHeight'));assert.ok(text.includes('saveCommitHarborHeight(__commitHarborTransport,e,Lt+It+zt)'));assert.ok(text.includes('commitHarborCheckedFiles'));assert.ok(text.includes('restoreChecks(n)'));
+ const text=fs.readFileSync(path.join(root,'dist/webview/chunks/commit-Bw38ouX0.js'),'utf8');assert.ok(text.includes('commitHarborMessageHeight'));assert.ok(text.includes('saveCommitHarborHeight(__commitHarborTransport,e,Lt+It+zt)'));assert.ok(text.includes('commitHarborCheckedFiles'));assert.ok(text.includes('restoreChecks(n)'));assert.ok(text.includes('commitHarborBranchPickerResize'));
+  const {apply:applyResize}=require('../patches/branch-picker-resize.cjs');assert.throws(()=>applyResize('unrelated version'),/commit-height-patched/);
  const extension=fs.readFileSync(path.join(root,'dist/extension.js'),'utf8');assert.ok(extension.includes('installBranchWorkspaceRestore'));assert.ok(extension.includes('commitHarbor.branchEditors.v1'));
 });
 test('upstream copyright and third-party notices remain available',()=>{
