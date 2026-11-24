@@ -53,6 +53,7 @@ subprocess.run(["node", str(ROOT / "patches/branch-workspace.cjs"), str(extensio
 subprocess.run(["node", str(ROOT / "patches/hunk-gutter.cjs"), str(extension)], check=True)
 subprocess.run(["node", str(ROOT / "patches/deploy-activate.cjs"), str(extension)], check=True)
 subprocess.run(["node", str(ROOT / "patches/commit-retain.cjs"), str(extension)], check=True)
+subprocess.run(["node", str(ROOT / "patches/commit-selected.cjs"), str(extension)], check=True)
 subprocess.run(["npm", "install", "--no-audit", "--no-fund", "--prefix", str(ROOT / "deploy")], cwd=ROOT, check=True)
 subprocess.run(["npm", "run", "build", "--prefix", str(ROOT / "deploy")], cwd=ROOT, check=True)
 text = extension.read_text()

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11
+
+- Fix: committing selected files runs hooks against an isolated index, so hooks such as `pre-commit` no longer collide with `git commit --only`; unrelated staged changes remain untouched.
+
 ## 0.1.10
 
 - Fix: a typed commit message now survives switching the sidebar to another view (for example File Explorer) and back — the Commit tool window keeps its webview context while hidden, matching the Git log and Pull Requests windows.
