@@ -430,7 +430,9 @@ export function registerLocalCommands(s: Services): vscode.Disposable[] {
     reg('deploy.disconnectAll', () => s.pool.disconnect()),
     /** Bridge for the commit window 'Deploy' button; not exposed to the command palette. */
     reg('commitharbor.deployUpload', async (groups: unknown) => {
+      s.log.output.info(`[commit-webview] deployUpload invoked; groups=${JSON.stringify(groups)}`);
       const uris = checkedFileUris(groups);
+      s.log.output.info(`[commit-webview] deployUpload resolved ${uris.length} file(s): ${uris.map((u) => u.fsPath).join(', ') || '-'}`);
       if (!uris.length) {
         void vscode.window.showInformationMessage('Commit Harbor: no checked files to upload.');
         return;
