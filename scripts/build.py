@@ -39,11 +39,21 @@ with zipfile.ZipFile(ARCHIVE) as archive:
 commit = ROOT / "dist/webview/chunks/commit-Bw38ouX0.js"
 subprocess.run(["node", str(ROOT / "patches/commit-height.cjs"), str(commit)], check=True)
 subprocess.run(["node", str(ROOT / "patches/commit-checks.cjs"), str(commit)], check=True)
+subprocess.run(["node", str(ROOT / "patches/branch-picker-resize.cjs"), str(commit)], check=True)
+subprocess.run(["node", str(ROOT / "patches/commit-deploy.cjs"), str(commit)], check=True)
+subprocess.run(["node", str(ROOT / "patches/commit-deploy-menu.cjs"), str(commit)], check=True)
 text = commit.read_text()
 if not text.startswith(NOTICE): commit.write_text(NOTICE + text)
+ui = ROOT / "dist/webview/chunks/ui-BbbfItdn.js"
+# The extraction already prepends NOTICE to renamed chunks; branch-tree-memory inserts its
+# helpers after the NOTICE, so do not prepend a second one here.
+subprocess.run(["node", str(ROOT / "patches/branch-tree-memory.cjs"), str(ui)], check=True)
 extension = ROOT / "dist/extension.js"
 subprocess.run(["node", str(ROOT / "patches/branch-workspace.cjs"), str(extension)], check=True)
 subprocess.run(["node", str(ROOT / "patches/hunk-gutter.cjs"), str(extension)], check=True)
+subprocess.run(["node", str(ROOT / "patches/deploy-activate.cjs"), str(extension)], check=True)
+subprocess.run(["npm", "install", "--no-audit", "--no-fund", "--prefix", str(ROOT / "deploy")], cwd=ROOT, check=True)
+subprocess.run(["npm", "run", "build", "--prefix", str(ROOT / "deploy")], cwd=ROOT, check=True)
 text = extension.read_text()
 if not text.startswith(NOTICE): extension.write_text(NOTICE + text)
 activity = ROOT / "media/icons/commitharbor.svg"

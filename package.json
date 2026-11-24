@@ -1,7 +1,7 @@
 {
   "name": "commit-harbor",
   "displayName": "Commit Harbor",
-  "description": "A Git workbench derived from Git Jet, with persistent commit pane height and branch-aware editor state.",
+  "description": "A Git workbench derived from Git Jet, with persistent commit pane height, branch-aware editor state, and built-in remote deployment over SFTP, FTP, FTPS, and WebDAV.",
   "version": "0.1.6",
   "publisher": "Toximiner",
   "license": "Apache-2.0",
@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/Toximiner/commit-harbor#readme",
   "engines": {
-    "vscode": "^1.107.0"
+    "vscode": "^1.140.0"
   },
   "categories": [
     "SCM Providers",
@@ -52,9 +52,22 @@
     "pull requests",
     "mcp",
     "ai",
-    "scm"
+    "scm",
+    "sftp",
+    "ftp",
+    "ftps",
+    "webdav",
+    "deploy",
+    "deployment",
+    "upload",
+    "sync",
+    "remote",
+    "ssh",
+    "rsync",
+    "server"
   ],
   "extensionKind": [
+    "ui",
     "workspace"
   ],
   "extensionDependencies": [
@@ -73,7 +86,9 @@
         "commitharbor.hosting.servers",
         "commitharbor.ai.cli.claudePath",
         "commitharbor.ai.cli.codexPath",
-        "commitharbor.ai.cli.geminiPath"
+        "commitharbor.ai.cli.geminiPath",
+        "remoteDeployment.connectionIdleTimeout",
+        "remoteDeployment.remoteEdit.uploadOnSave"
       ]
     }
   },
@@ -85,7 +100,11 @@
     "onFileSystem:commitharbor-rev",
     "onFileSystem:commitharbor-shelf",
     "onFileSystem:commitharbor-clipboard",
-    "onMcpServerDefinitionProvider:commitharbor"
+    "onMcpServerDefinitionProvider:commitharbor",
+    "onStartupFinished",
+    "onFileSystem:deploy-remote",
+    "workspaceContains:.vscode/deployment.json",
+    "workspaceContains:.idea/deployment.xml"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -95,6 +114,11 @@
           "id": "commitharbor",
           "title": "Commit Harbor",
           "icon": "media/icons/commitharbor.svg"
+        },
+        {
+          "id": "deployment",
+          "title": "Deployment",
+          "icon": "deploy/resources/deployment.svg"
         }
       ],
       "panel": [
@@ -102,6 +126,11 @@
           "id": "commitharbor-panel",
           "title": "Commit Harbor",
           "icon": "media/icons/commitharbor.svg"
+        },
+        {
+          "id": "deploymentPanel",
+          "title": "File Transfer",
+          "icon": "$(arrow-swap)"
         }
       ]
     },
@@ -135,6 +164,20 @@
           "initialSize": 2,
           "visibility": "collapsed",
           "when": "isWorkspaceTrusted && commitharbor.githubRepository"
+        }
+      ],
+      "deployment": [
+        {
+          "id": "deploy.remoteHost",
+          "name": "Remote Host",
+          "icon": "$(server)"
+        }
+      ],
+      "deploymentPanel": [
+        {
+          "id": "deploy.fileTransfer",
+          "name": "File Transfer",
+          "icon": "$(arrow-swap)"
         }
       ]
     },
@@ -1424,6 +1467,353 @@
         "command": "commitharbor.gitflow.finishHotfix",
         "title": "Git Flow: Finish Hotfix…",
         "category": "Commit Harbor"
+      },
+      {
+        "command": "deploy.upload",
+        "title": "Upload to Default Server",
+        "category": "Deployment",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "deploy.uploadTo",
+        "title": "Upload To…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.uploadAllOpen",
+        "title": "Upload All Open Files to Default Server",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.uploadAllOpenTo",
+        "title": "Upload All Open Files To…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.download",
+        "title": "Download from Default Server",
+        "category": "Deployment",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "deploy.downloadFrom",
+        "title": "Download From…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.compare",
+        "title": "Compare with Deployed Version",
+        "category": "Deployment",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "deploy.compareWith",
+        "title": "Compare with Deployed To…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.sync",
+        "title": "Sync with Deployed…",
+        "category": "Deployment",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "deploy.syncWith",
+        "title": "Sync with Deployed To…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.editRemoteFile",
+        "title": "Edit Remote File",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.deleteRemote",
+        "title": "Delete Deployed Item…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.copyRemotePath",
+        "title": "Copy Deployment Path",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.openInBrowser",
+        "title": "Open in Browser (Deployment)",
+        "category": "Deployment",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "deploy.toggleLocalExclusion",
+        "title": "Toggle Excluded Path",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.selectInRemoteHost",
+        "title": "Select in Remote Host",
+        "category": "Deployment",
+        "icon": "$(target)"
+      },
+      {
+        "command": "deploy.configuration",
+        "title": "Configuration…",
+        "category": "Deployment",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "deploy.options",
+        "title": "Options…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.toggleAutoUpload",
+        "title": "Toggle Automatic Upload",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.browse",
+        "title": "Browse Remote Host",
+        "category": "Deployment",
+        "icon": "$(server)"
+      },
+      {
+        "command": "deploy.selectDefaultServer",
+        "title": "Choose Default Server or Group…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.testConnection",
+        "title": "Test Connection…",
+        "category": "Deployment",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "deploy.startSsh",
+        "title": "Start SSH Session…",
+        "category": "Deployment",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "deploy.importIdea",
+        "title": "Import .idea Deployment Configuration",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.newProjectFromServer",
+        "title": "New Project from Existing Files…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.setPassword",
+        "title": "Set Password / Passphrase…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.forgetPassword",
+        "title": "Forget Saved Password…",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.disconnectAll",
+        "title": "Disconnect All Servers",
+        "category": "Deployment"
+      },
+      {
+        "command": "deploy.remote.uploadCurrent",
+        "title": "Upload Current Remote File",
+        "category": "Deployment",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "deploy.remote.refreshCurrent",
+        "title": "Refresh Current Remote File",
+        "category": "Deployment",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "deploy.remote.compareLastUploaded",
+        "title": "Compare with Last Uploaded Version",
+        "category": "Deployment",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "deploy.remote.revertLastUploaded",
+        "title": "Revert to Last Uploaded Version",
+        "category": "Deployment",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "deploy.host.refresh",
+        "title": "Refresh",
+        "category": "Remote Host",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "deploy.host.collapse",
+        "title": "Collapse All",
+        "category": "Remote Host",
+        "icon": "$(collapse-all)"
+      },
+      {
+        "command": "deploy.host.goTo",
+        "title": "Go to Path…",
+        "category": "Remote Host",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "deploy.host.toggleSize",
+        "title": "Show Size",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.newFile",
+        "title": "File",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.newFolder",
+        "title": "Directory",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.rename",
+        "title": "Rename…",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.delete",
+        "title": "Delete",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.cut",
+        "title": "Cut",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.copy",
+        "title": "Copy",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.paste",
+        "title": "Paste",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.chmod",
+        "title": "Change Permissions…",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.copyPaths",
+        "title": "Copy Paths",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.copyWebUrl",
+        "title": "Copy Web URL",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.toggleExclusion",
+        "title": "Toggle Excluded Path",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.editLocal",
+        "title": "Edit Local File",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.editRemote",
+        "title": "Edit Remote File",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.download",
+        "title": "Download from Here",
+        "category": "Remote Host",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "deploy.host.upload",
+        "title": "Upload Here",
+        "category": "Remote Host",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "deploy.host.compare",
+        "title": "Compare with Local Version",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.sync",
+        "title": "Sync with Local…",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.openInBrowser",
+        "title": "Open in Browser",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.ssh",
+        "title": "Start SSH Session",
+        "category": "Remote Host",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "deploy.host.test",
+        "title": "Test Connection",
+        "category": "Remote Host",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "deploy.host.setDefault",
+        "title": "Use as Default Server",
+        "category": "Remote Host",
+        "icon": "$(star-empty)"
+      },
+      {
+        "command": "deploy.host.edit",
+        "title": "Edit Server…",
+        "category": "Remote Host",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "deploy.host.disconnect",
+        "title": "Disconnect",
+        "category": "Remote Host",
+        "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "deploy.log.clear",
+        "title": "Clear",
+        "category": "File Transfer",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "deploy.log.output",
+        "title": "Show Log Output",
+        "category": "File Transfer",
+        "icon": "$(output)"
+      },
+      {
+        "command": "deploy.log.details",
+        "title": "Show Details",
+        "category": "File Transfer"
+      },
+      {
+        "command": "deploy.host.open",
+        "title": "Open Remote File",
+        "category": "Remote Host"
+      },
+      {
+        "command": "deploy.host.serverMenu",
+        "title": "More Actions…",
+        "category": "Remote Host",
+        "icon": "$(ellipsis)"
       }
     ],
     "submenus": [
@@ -1446,6 +1836,15 @@
       {
         "id": "commitharbor.localHistory",
         "label": "Local History"
+      },
+      {
+        "id": "deploy.submenu",
+        "label": "Deployment",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "id": "deploy.remote.newSubmenu",
+        "label": "New"
       }
     ],
     "menus": {
@@ -1464,6 +1863,61 @@
           "command": "commitharbor.mcp.show",
           "when": "view == commitharbor.commit || view == commitharbor.log",
           "group": "9_settings@3"
+        },
+        {
+          "command": "deploy.host.refresh",
+          "when": "view == deploy.remoteHost",
+          "group": "navigation@1"
+        },
+        {
+          "command": "deploy.host.goTo",
+          "when": "view == deploy.remoteHost",
+          "group": "navigation@2"
+        },
+        {
+          "command": "deploy.configuration",
+          "when": "view == deploy.remoteHost",
+          "group": "navigation@3"
+        },
+        {
+          "command": "deploy.host.collapse",
+          "when": "view == deploy.remoteHost",
+          "group": "navigation@4"
+        },
+        {
+          "command": "deploy.host.toggleSize",
+          "when": "view == deploy.remoteHost",
+          "group": "1_view@1"
+        },
+        {
+          "command": "deploy.selectDefaultServer",
+          "when": "view == deploy.remoteHost",
+          "group": "1_view@2"
+        },
+        {
+          "command": "deploy.toggleAutoUpload",
+          "when": "view == deploy.remoteHost",
+          "group": "1_view@3"
+        },
+        {
+          "command": "deploy.options",
+          "when": "view == deploy.remoteHost",
+          "group": "1_view@4"
+        },
+        {
+          "command": "deploy.disconnectAll",
+          "when": "view == deploy.remoteHost",
+          "group": "1_view@5"
+        },
+        {
+          "command": "deploy.log.output",
+          "when": "view == deploy.fileTransfer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "deploy.log.clear",
+          "when": "view == deploy.fileTransfer",
+          "group": "navigation@2"
         }
       ],
       "editor/context": [
@@ -1501,6 +1955,31 @@
           "submenu": "commitharbor.localHistory",
           "when": "resourceScheme == file",
           "group": "commitharbor@2"
+        },
+        {
+          "submenu": "deploy.submenu",
+          "group": "deploy@1",
+          "when": "resourceScheme == file"
+        },
+        {
+          "command": "deploy.remote.uploadCurrent",
+          "group": "deploy@1",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.refreshCurrent",
+          "group": "deploy@2",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.compareLastUploaded",
+          "group": "deploy@3",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.revertLastUploaded",
+          "group": "deploy@4",
+          "when": "resourceScheme == deploy-remote"
         }
       ],
       "explorer/context": [
@@ -1528,9 +2007,135 @@
           "command": "commitharbor.compare.selectedDirectories",
           "when": "listDoubleSelection && explorerResourceIsFolder && resourceScheme == file",
           "group": "3_compare@9"
+        },
+        {
+          "submenu": "deploy.submenu",
+          "group": "deploy@1",
+          "when": "resourceScheme == file"
         }
       ],
-      "view/item/context": [],
+      "view/item/context": [
+        {
+          "command": "deploy.host.serverMenu",
+          "when": "view == deploy.remoteHost && viewItem =~ /^server/",
+          "group": "inline@1"
+        },
+        {
+          "command": "deploy.host.test",
+          "when": "view == deploy.remoteHost && viewItem =~ /^server/",
+          "group": "1_server@1"
+        },
+        {
+          "command": "deploy.host.ssh",
+          "when": "view == deploy.remoteHost && viewItem =~ /^server.*ssh/",
+          "group": "1_server@2"
+        },
+        {
+          "command": "deploy.host.setDefault",
+          "when": "view == deploy.remoteHost && viewItem =~ /^server/",
+          "group": "1_server@3"
+        },
+        {
+          "command": "deploy.host.edit",
+          "when": "view == deploy.remoteHost && viewItem =~ /^server/",
+          "group": "1_server@4"
+        },
+        {
+          "command": "deploy.host.disconnect",
+          "when": "view == deploy.remoteHost && viewItem =~ /^server/",
+          "group": "1_server@5"
+        },
+        {
+          "command": "deploy.host.upload",
+          "when": "view == deploy.remoteHost && viewItem =~ /^(remote|server)/",
+          "group": "1_transfer@1"
+        },
+        {
+          "command": "deploy.host.download",
+          "when": "view == deploy.remoteHost && viewItem =~ /^(remote|server)/",
+          "group": "1_transfer@2"
+        },
+        {
+          "submenu": "deploy.remote.newSubmenu",
+          "when": "view == deploy.remoteHost && viewItem =~ /^(remoteDir|server)/",
+          "group": "2_edit@1"
+        },
+        {
+          "command": "deploy.host.chmod",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote.*chmod/",
+          "group": "2_edit@2"
+        },
+        {
+          "command": "deploy.host.rename",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote/",
+          "group": "2_edit@3"
+        },
+        {
+          "command": "deploy.host.delete",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote/",
+          "group": "2_edit@4"
+        },
+        {
+          "command": "deploy.host.cut",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote/",
+          "group": "3_clip@1"
+        },
+        {
+          "command": "deploy.host.copy",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote/",
+          "group": "3_clip@2"
+        },
+        {
+          "command": "deploy.host.paste",
+          "when": "view == deploy.remoteHost && viewItem =~ /^(remoteDir|server)/",
+          "group": "3_clip@3"
+        },
+        {
+          "command": "deploy.host.editLocal",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote.*mapped/",
+          "group": "4_open@1"
+        },
+        {
+          "command": "deploy.host.editRemote",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remoteFile/",
+          "group": "4_open@2"
+        },
+        {
+          "command": "deploy.host.openInBrowser",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote.*mapped/",
+          "group": "4_open@3"
+        },
+        {
+          "command": "deploy.host.sync",
+          "when": "view == deploy.remoteHost && viewItem =~ /^(remote.*mapped|server)/",
+          "group": "5_compare@1"
+        },
+        {
+          "command": "deploy.host.compare",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remoteFile.*mapped/",
+          "group": "5_compare@2"
+        },
+        {
+          "command": "deploy.host.copyPaths",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote/",
+          "group": "6_misc@1"
+        },
+        {
+          "command": "deploy.host.copyWebUrl",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote.*mapped/",
+          "group": "6_misc@2"
+        },
+        {
+          "command": "deploy.host.toggleExclusion",
+          "when": "view == deploy.remoteHost && viewItem =~ /^remote/",
+          "group": "6_misc@3"
+        },
+        {
+          "command": "deploy.log.details",
+          "when": "view == deploy.fileTransfer && viewItem == transfer",
+          "group": "1@1"
+        }
+      ],
       "commandPalette": [
         {
           "command": "commitharbor.backgroundTasks.cancel",
@@ -1807,6 +2412,126 @@
         {
           "command": "commitharbor.lfs.pull",
           "when": "commitharbor.lfsRepository"
+        },
+        {
+          "command": "deploy.remote.uploadCurrent",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.refreshCurrent",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.compareLastUploaded",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.revertLastUploaded",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.host.newFile",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.newFolder",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.rename",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.delete",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.cut",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.copy",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.paste",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.chmod",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.copyPaths",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.copyWebUrl",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.toggleExclusion",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.editLocal",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.editRemote",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.download",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.upload",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.compare",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.sync",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.openInBrowser",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.ssh",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.test",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.setDefault",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.edit",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.disconnect",
+          "when": "false"
+        },
+        {
+          "command": "deploy.log.details",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.open",
+          "when": "false"
+        },
+        {
+          "command": "deploy.host.serverMenu",
+          "when": "false"
         }
       ],
       "editor/lineNumber/context": [
@@ -2085,6 +2810,87 @@
           "command": "commitharbor.github.createGist",
           "when": "resourceScheme == file",
           "group": "commitharbor@9"
+        },
+        {
+          "submenu": "deploy.submenu",
+          "group": "deploy@1",
+          "when": "resourceScheme == file"
+        }
+      ],
+      "deploy.submenu": [
+        {
+          "command": "deploy.upload",
+          "group": "1_transfer@1",
+          "when": "deploy.hasServers"
+        },
+        {
+          "command": "deploy.download",
+          "group": "1_transfer@2",
+          "when": "deploy.hasServers"
+        },
+        {
+          "command": "deploy.compare",
+          "group": "2_compare@1",
+          "when": "deploy.hasServers"
+        },
+        {
+          "command": "deploy.sync",
+          "group": "2_compare@2",
+          "when": "deploy.hasServers"
+        },
+        {
+          "command": "deploy.editRemoteFile",
+          "group": "3_remote@1",
+          "when": "deploy.hasServers"
+        },
+        {
+          "command": "deploy.configuration",
+          "group": "9_config@1",
+          "when": "!deploy.hasServers"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "deploy.remote.uploadCurrent",
+          "group": "navigation@1",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.refreshCurrent",
+          "group": "navigation@2",
+          "when": "resourceScheme == deploy-remote"
+        },
+        {
+          "command": "deploy.remote.compareLastUploaded",
+          "group": "navigation@3",
+          "when": "resourceScheme == deploy-remote"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "deploy.upload",
+          "group": "deploy@1",
+          "when": "deploy.hasServers"
+        },
+        {
+          "command": "deploy.compare",
+          "group": "deploy@2",
+          "when": "deploy.hasServers"
+        },
+        {
+          "command": "deploy.sync",
+          "group": "deploy@3",
+          "when": "deploy.hasServers"
+        }
+      ],
+      "deploy.remote.newSubmenu": [
+        {
+          "command": "deploy.host.newFile",
+          "group": "1@1"
+        },
+        {
+          "command": "deploy.host.newFolder",
+          "group": "1@2"
         }
       ]
     },
@@ -3095,6 +3901,23 @@
             "description": "Show the Git Flow item in the status bar (its popup starts and finishes features, releases and hotfixes) in repositories initialized for git-flow, like the Gitflow widget of the Git Flow Integration plugin."
           }
         }
+      },
+      {
+        "id": "remoteDeployment",
+        "order": 3,
+        "title": "Remote Deployment",
+        "properties": {
+          "remoteDeployment.connectionIdleTimeout": {
+            "type": "number",
+            "default": 300,
+            "description": "Seconds an idle connection stays open before it is closed."
+          },
+          "remoteDeployment.remoteEdit.uploadOnSave": {
+            "type": "boolean",
+            "default": true,
+            "description": "Upload remote files opened with Edit Remote File when they are saved. When off, use Upload Current Remote File (Shift+Alt+Q)."
+          }
+        }
       }
     ],
     "keybindings": [
@@ -3173,6 +3996,56 @@
         "key": "ctrl+alt+shift+down",
         "mac": "ctrl+alt+shift+down",
         "when": "editorTextFocus && commitharbor.hasRepositories && config.commitharbor.keymap == jetbrains"
+      },
+      {
+        "command": "deploy.uploadTo",
+        "key": "ctrl+shift+alt+x",
+        "mac": "cmd+shift+alt+x"
+      },
+      {
+        "command": "deploy.remote.uploadCurrent",
+        "key": "shift+alt+q",
+        "when": "resourceScheme == deploy-remote"
+      },
+      {
+        "command": "deploy.host.delete",
+        "key": "delete",
+        "mac": "cmd+backspace",
+        "when": "focusedView == deploy.remoteHost"
+      },
+      {
+        "command": "deploy.host.rename",
+        "key": "shift+f6",
+        "when": "focusedView == deploy.remoteHost"
+      },
+      {
+        "command": "deploy.host.copy",
+        "key": "ctrl+c",
+        "mac": "cmd+c",
+        "when": "focusedView == deploy.remoteHost"
+      },
+      {
+        "command": "deploy.host.cut",
+        "key": "ctrl+x",
+        "mac": "cmd+x",
+        "when": "focusedView == deploy.remoteHost"
+      },
+      {
+        "command": "deploy.host.paste",
+        "key": "ctrl+v",
+        "mac": "cmd+v",
+        "when": "focusedView == deploy.remoteHost"
+      },
+      {
+        "command": "deploy.host.editLocal",
+        "key": "f4",
+        "when": "focusedView == deploy.remoteHost"
+      },
+      {
+        "command": "deploy.host.copyPaths",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c",
+        "when": "focusedView == deploy.remoteHost"
       }
     ],
     "colors": [
@@ -3261,6 +4134,59 @@
       {
         "id": "commitharbor",
         "label": "Commit Harbor"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "deploy.remoteHost",
+        "contents": "No deployment servers configured.\n[Add Server](command:deploy.configuration)\n[Import .idea Configuration](command:deploy.importIdea)\n[New Project from Existing Files…](command:deploy.newProjectFromServer)"
+      },
+      {
+        "view": "deploy.fileTransfer",
+        "contents": "No file transfers yet."
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "deployment",
+        "required": [],
+        "properties": {
+          "server": {
+            "type": "string",
+            "description": "Server or group name. Defaults to the default server."
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Local paths (relative to the workspace folder) to upload. Defaults to every mapped path."
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "upload",
+              "download"
+            ],
+            "default": "upload"
+          }
+        }
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": ".vscode/deployment.json",
+        "url": "./deploy./schema/deployment.schema.json"
+      }
+    ],
+    "resourceLabelFormatters": [
+      {
+        "scheme": "deploy-remote",
+        "formatting": {
+          "label": "${authority}:${path}",
+          "separator": "/",
+          "workspaceSuffix": "Remote"
+        }
       }
     ]
   },
