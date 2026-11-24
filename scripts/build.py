@@ -41,6 +41,7 @@ subprocess.run(["node", str(ROOT / "patches/commit-height.cjs"), str(commit)], c
 subprocess.run(["node", str(ROOT / "patches/commit-checks.cjs"), str(commit)], check=True)
 subprocess.run(["node", str(ROOT / "patches/branch-picker-resize.cjs"), str(commit)], check=True)
 subprocess.run(["node", str(ROOT / "patches/commit-deploy.cjs"), str(commit)], check=True)
+subprocess.run(["node", str(ROOT / "patches/commit-deploy-menu.cjs"), str(commit)], check=True)
 text = commit.read_text()
 if not text.startswith(NOTICE): commit.write_text(NOTICE + text)
 ui = ROOT / "dist/webview/chunks/ui-BbbfItdn.js"
