@@ -16,6 +16,7 @@ Downstream changes:
 - Remember checked and previously seen files in the Commit view across window reloads.
 - Leave newly detected modified files unchecked until you select them.
 - Remember expanded and collapsed groups in the Commit view tree across window reloads.
+- Built-in remote deployment over SFTP, FTP, FTPS and WebDAV: configure servers in `.vscode/deployment.json`, then upload, download, compare and sync from the **Remote Host** view or the **Upload to Default Server** context-menu item in the Commit pane and the file tree.
 - Remember open files per Git branch. On switching branches, clean tabs for that repository are replaced with the target branch's remembered files; tabs with unsaved changes stay open. Disable `commitharbor.branches.restoreWorkspace` to turn this off.
 - Keep hunk include/exclude checkmarks out of the editor gutter by default. To show them, enable **Commit Harbor › Editor: Show Hunk Inclusion Gutter** (`commitharbor.editor.showHunkInclusionGutter`) in VS Code Settings; hunk inclusion controls remain available in the Commit view either way.
 - Preserve unrelated webview state and keep a usable minimum input height.
@@ -23,6 +24,10 @@ Downstream changes:
 - New extension branding and icon, with upstream attribution retained.
 
 The original upstream feature set is inherited, not independently reimplemented. This is an early downstream release; regression tests focus on the modifications and distribution integrity, not every upstream Git operation.
+
+## Remote deployment
+
+Remote deployment is built in (vendored Remote Deployment 1.1.1, Apache-2.0) — no separate extension needed. Configure one or more servers in `.vscode/deployment.json` (protocol SFTP, FTP, FTPS or WebDAV, plus host, port, credentials, key or certificate, and a remote root path). The **Remote Host** view lists configured servers and project mappings and supports upload, download, compare, sync and opening remote files. In the Commit pane, right-click changed files and choose **Upload to Default Server** to send them to the default server from the current mapping. Existing `.vscode/deployment.json` files, `deploy.*` commands and `remoteDeployment.*` settings from the standalone Remote Deployment extension work as-is.
 
 ## Screenshots
 

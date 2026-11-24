@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.7
+
+- Built-in remote deployment over SFTP, FTP, FTPS and WebDAV (vendored Remote Deployment 1.1.1).
+- Configure servers in `.vscode/deployment.json`; upload, download, compare, sync and open remote files from the new Remote Host view.
+- "Upload to Default Server" context-menu item in the Commit pane changes list and the file explorer.
+- Preserve `deploy.*` commands, `remoteDeployment.*` settings and the `.vscode/deployment.json` format for compatibility with the standalone Remote Deployment extension.
+- Remember expanded folders in the branch picker across window reloads.
+
+## 0.1.6
+
+- Keep hunk include/exclude checkmarks out of the editor gutter by default. Enable them with **Commit Harbor › Editor: Show Hunk Inclusion Gutter** (`commitharbor.editor.showHunkInclusionGutter`); hunk inclusion controls remain in the Commit view either way.
+
 ## 0.1.5
 
 - Remember expanded and collapsed groups in the Commit view tree across window reloads.
