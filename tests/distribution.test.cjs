@@ -16,6 +16,12 @@ test('build includes Commit view state patches and cannot silently patch another
   const ui=fs.readFileSync(path.join(root,'dist/webview/chunks/ui-BbbfItdn.js'),'utf8');assert.ok(ui.includes('commitHarborBranchTreeSaved'));assert.ok(ui.includes('commitHarborBranchTreePersist'));
  const extension=fs.readFileSync(path.join(root,'dist/extension.js'),'utf8');assert.ok(extension.includes('installBranchWorkspaceRestore'));assert.ok(extension.includes('commitHarbor.branchEditors.v1'));assert.ok(extension.includes('registerToolWindow("commit",this,{page:{entry:"commit",title:"Commit"},retainContext:!0}'));
 });
+test('selected-file commits rebuild the real index so hooks see the selected set',()=>{
+ const {apply}=require('../patches/commit-selected.cjs');assert.throws(()=>apply('unrelated version'),/patch target changed/);
+ const extension=fs.readFileSync(path.join(root,'dist/extension.js'),'utf8');
+ assert.ok(extension.includes('.index.commitharbor-'));assert.ok(extension.includes('"read-tree","--empty"'));
+ assert.ok(!extension.includes('GIT_INDEX_FILE'));assert.ok(!extension.includes('a.push("--only"'));
+});
 test('upstream copyright and third-party notices remain available',()=>{
  const notice=fs.readFileSync(path.join(root,'NOTICE'),'utf8');assert.ok(notice.includes('Santiago Bárcenas'));assert.ok(notice.includes('JetBrains'));assert.ok(notice.includes('Commit Harbor downstream'));
  assert.ok(fs.readFileSync(path.join(root,'THIRD_PARTY_NOTICES.md'),'utf8').includes('@codemirror'));
