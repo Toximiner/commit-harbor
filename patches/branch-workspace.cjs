@@ -1,4 +1,8 @@
 // Commit Harbor downstream change: remember open editor tabs per Git branch.
+// Snapshots store one file list per editor group, in group order, so restored files
+// return to the split column they were saved in (empty groups are kept to preserve
+// column positions). Snapshots written by earlier versions are a flat URI list: they
+// restore into the active group, exactly as before.
 // Copyright 2026 Toximiner contributors. Licensed under Apache-2.0.
 const fs = require('node:fs');
 function installBranchWorkspaceRestore(context, vscode) {
@@ -23,10 +27,14 @@ function installBranchWorkspaceRestore(context, vscode) {
             return file === root || file.startsWith(prefix) ? uri.toString() : undefined;
         }).filter(Boolean);
     };
+    const asGroups = snapshot => {
+        if (Array.isArray(snapshot) && snapshot.some(group => Array.isArray(group))) return { groups: snapshot, columns: true };
+        const flat = Array.isArray(snapshot) ? snapshot : [];
+        return { groups: [[...new Set(flat)]], columns: false };
+    };
     let gitApi;
     const save = () => {
         if (!config() || !gitApi) return;
-        const openTabs = tabs();
         for (const repo of gitApi.repositories) {
             const root = repo.rootUri.toString();
             if (switchingRoots.has(root)) continue;
@@ -34,8 +42,7 @@ function installBranchWorkspaceRestore(context, vscode) {
             if (!branch) continue;
             previousBranches.set(root, branch);
             snapshots[root] ??= {};
-            const cleanTabs = openTabs.filter(tab => !tab.isDirty);
-            snapshots[root][branch] = filesInRepo(repo, cleanTabs);
+            snapshots[root][branch] = vscode.window.tabGroups.all.map(group => filesInRepo(repo, group.tabs.filter(tab => !tab.isDirty)));
         }
         void context.workspaceState.update(stateKey, snapshots);
     };
@@ -43,7 +50,8 @@ function installBranchWorkspaceRestore(context, vscode) {
     const restore = async (repo, branch) => {
         if (!config() || !branch) return;
         const root = repo.rootUri.toString();
-        const files = new Set(snapshots[root]?.[branch] ?? []);
+        const layout = asGroups(snapshots[root]?.[branch]);
+        const files = new Set(layout.groups.flat());
         const path = require('node:path');
         const repoPath = repo.rootUri.fsPath;
         const repoPrefix = repoPath.endsWith(path.sep) ? repoPath : repoPath + path.sep;
@@ -58,13 +66,18 @@ function installBranchWorkspaceRestore(context, vscode) {
         const staleTabs = current.filter(e => e.inRepo && !e.tab.isDirty && !files.has(e.uri.toString())).map(e => e.tab);
         if (staleTabs.length) await vscode.window.tabGroups.close(staleTabs, true).catch(() => false);
         const openUris = new Set(current.filter(e => e.uri && e.uri.scheme === 'file').map(e => e.uri.toString()));
-        for (const value of files) {
-            if (openUris.has(value)) continue;
-            try {
-                const uri = vscode.Uri.parse(value);
-                await vscode.workspace.openTextDocument(uri);
-                await vscode.window.showTextDocument(uri, { preview: false, preserveFocus: true });
-            } catch { /* This path may not exist on the selected branch. */ }
+        const columns = [vscode.ViewColumn.One, vscode.ViewColumn.Two, vscode.ViewColumn.Three];
+        for (let index = 0; index < layout.groups.length; index++) {
+            const options = { preview: false, preserveFocus: true };
+            if (layout.columns && index < columns.length) options.viewColumn = columns[index];
+            for (const value of layout.groups[index]) {
+                if (openUris.has(value)) continue;
+                try {
+                    const uri = vscode.Uri.parse(value);
+                    await vscode.workspace.openTextDocument(uri);
+                    await vscode.window.showTextDocument(uri, options);
+                } catch { /* This path may not exist on the selected branch. */ }
+            }
         }
     };
     const trackRepo = repo => {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.15
+
+- Fix: the per-branch tab memory now records which editor group (split column) each file was in, so switching branches and back restores files to their original split halves instead of stacking them in the active group. Snapshots written by earlier versions keep the previous behavior (files open in the active group).
+
 ## 0.1.14
 
 - Fix: committing selected files now rewrites the repository's real index for the duration of the commit (snapshot the index, `read-tree HEAD`, stage the selection, commit, restore the snapshot, then `git reset -- <selected>` to re-sync the committed paths). This replaces the isolated `GIT_INDEX_FILE` index from 0.1.12: hooks that run git in their own environment (for example `pre-commit` inside Docker) can no longer see a stale repository index, so commits fail only on the files you actually selected.
