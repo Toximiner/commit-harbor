@@ -21,6 +21,7 @@ Downstream changes:
 - Built-in remote deployment over SFTP, FTP, FTPS and WebDAV: configure servers in `.vscode/deployment.json`, then upload, download, compare and sync from the **Remote Host** view or the **Upload to Default Server** context-menu item in the Commit pane and the file tree.
 - Remember open files per Git branch. On switching branches, clean tabs for that repository are replaced with the target branch's remembered files; tabs with unsaved changes stay open. Disable `commitharbor.branches.restoreWorkspace` to turn this off.
 - Keep hunk include/exclude checkmarks out of the editor gutter by default. To show them, enable **Commit Harbor › Editor: Show Hunk Inclusion Gutter** (`commitharbor.editor.showHunkInclusionGutter`) in VS Code Settings; hunk inclusion controls remain available in the Commit view either way.
+- Keep the gutter change popup out of the editor by default. The popup — the previous line content, the `-`/`+` diff block and the action links (Previous/Next Change, Rollback Lines, Show Diff for Lines, Copy, Stage, Move Lines to Another Changelist) — used to appear when hovering any line of a changed hunk. It is now off by default; enable it with `commitharbor.gutter.showHover` in VS Code Settings.
 - Preserve unrelated webview state and keep a usable minimum input height.
 - Use a separate extension ID, `commitharbor.*` commands, views and settings.
 - New extension branding and icon, with upstream attribution retained.
