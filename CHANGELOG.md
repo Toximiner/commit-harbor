@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.14
+
+- Fix: committing selected files now rewrites the repository's real index for the duration of the commit (snapshot the index, `read-tree HEAD`, stage the selection, commit, restore the snapshot, then `git reset -- <selected>` to re-sync the committed paths). This replaces the isolated `GIT_INDEX_FILE` index from 0.1.12: hooks that run git in their own environment (for example `pre-commit` inside Docker) can no longer see a stale repository index, so commits fail only on the files you actually selected.
+- Note: while the commit hooks run, the staging area is temporarily replaced by the selected files and then restored; changes you stage in the Commit window during that interval are not preserved.
+
 ## 0.1.13
 
 - The gutter change popup (previous content and the action links, shown when hovering changed lines) is now off by default. Enable it with `commitharbor.gutter.showHover`.
