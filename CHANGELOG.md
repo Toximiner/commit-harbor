@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.13
+
+- The gutter change popup (previous content and the action links, shown when hovering changed lines) is now off by default. Enable it with `commitharbor.gutter.showHover`.
+
 ## 0.1.12
 
 - Fix: committing selected files runs hooks against an isolated index, so hooks such as `pre-commit` no longer collide with the repository index; unrelated staged changes remain untouched.
