@@ -46,7 +46,7 @@ test('a real switch keeps remembered files in their group and closes only unreme
  assert.equal(env.calls.close[0][1],true,'clean tabs are force-closed');
  assert.deepEqual(env.calls.show,['file:///w/harbor/z.py'],'only the missing remembered file is opened');
 });
-test('switching to a branch with no remembered files closes repo tabs',async()=>{
+test('switching to a branch saved with no remembered files closes repo tabs',async()=>{
  const env=makeEnv({initialBranch:'a',snapshot:{'file:///w/harbor':{b:[]}}});
  env.setGroups([{tabs:[env.fileTab('/w/harbor/x.py')]}]);
  env.repo.state.HEAD.name='b';
@@ -54,6 +54,18 @@ test('switching to a branch with no remembered files closes repo tabs',async()=>
  await wait(450);
  assert.deepEqual(env.calls.close[0][0].map(tab=>tab.input.uri.fsPath),['/w/harbor/x.py']);
  assert.deepEqual(env.calls.show,[]);
+});
+test('switching to a branch with no saved snapshot keeps the current tabs',async()=>{
+  const env=makeEnv({initialBranch:'a',snapshot:{'file:///w/harbor':{a:['file:///w/harbor/x.py']}}});
+  env.setGroups([{tabs:[env.fileTab('/w/harbor/x.py')]},{tabs:[env.fileTab('/w/harbor/y.py')]}]);
+  env.repo.state.HEAD.name='b';
+  env.repo._change();
+  await wait(450);
+  assert.equal(env.calls.close.length,0,'no tab may be closed when the target branch was never saved');
+  assert.deepEqual(env.calls.show,[]);
+  assert.deepEqual(env.saved['commitHarbor.branchEditors.v1']['file:///w/harbor'].b,
+    [['file:///w/harbor/x.py'],['file:///w/harbor/y.py']],
+    'the kept layout is saved as the new branch snapshot');
 });
 test('dirty tabs are never closed on a branch switch',async()=>{
  const env=makeEnv({initialBranch:'a',snapshot:{'file:///w/harbor':{b:[]}}});

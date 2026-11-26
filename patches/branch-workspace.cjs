@@ -2,7 +2,9 @@
 // Snapshots store one file list per editor group, in group order, so restored files
 // return to the split column they were saved in (empty groups are kept to preserve
 // column positions). Snapshots written by earlier versions are a flat URI list: they
-// restore into the active group, exactly as before.
+// restore into the active group, exactly as before. A branch with no saved
+// snapshot keeps the currently open tabs (and inherits that layout as its
+// first snapshot) instead of closing every repo file.
 // Copyright 2026 Toximiner contributors. Licensed under Apache-2.0.
 const fs = require('node:fs');
 function installBranchWorkspaceRestore(context, vscode) {
@@ -50,7 +52,12 @@ function installBranchWorkspaceRestore(context, vscode) {
     const restore = async (repo, branch) => {
         if (!config() || !branch) return;
         const root = repo.rootUri.toString();
-        const layout = asGroups(snapshots[root]?.[branch]);
+        // A branch that was never saved has no remembered layout: keep the current tabs
+        // instead of closing every repo file. The save() after restore then records the
+        // kept layout as this branch's snapshot, so the next switch restores it.
+        const remembered = snapshots[root]?.[branch];
+        if (remembered === undefined) return;
+        const layout = asGroups(remembered);
         const files = new Set(layout.groups.flat());
         const path = require('node:path');
         const repoPath = repo.rootUri.fsPath;

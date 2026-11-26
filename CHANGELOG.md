@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.16
+
+- Fix: switching to a branch that has no saved tab memory no longer closes all open repository files. The currently open tabs are kept, and the kept layout is saved as that branch's first snapshot, so switching back restores the branch you came from.
+
 ## 0.1.15
 
 - Fix: the per-branch tab memory now records which editor group (split column) each file was in, so switching branches and back restores files to their original split halves instead of stacking them in the active group. Snapshots written by earlier versions keep the previous behavior (files open in the active group).
